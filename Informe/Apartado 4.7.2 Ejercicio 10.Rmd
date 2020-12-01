@@ -1,0 +1,350 @@
+---
+title: "Apartado 4.7.2 Ejercicio 10"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+Librerias a utilizar 
+```{r, warning=FALSE, message=FALSE}
+library(corrplot)
+library(PerformanceAnalytics)
+library(vcd)
+library(MASS)
+library(class)
+
+```
+
+## Ejercicio 10
+
+Esta pregunta debe responderse utilizando el conjunto de datos Weekly, que es parte del paquete ISLR. Estos datos son de naturaleza similar a los datos de Smarket del laboratorio de este capítulo, excepto que contienen 1.089 retornos semanales durante 21 años, desde principios de 1990 hasta finales de 2010.
+
+### Solucion enunciado del punto a
+
+Produzca algunos resúmenes numéricos y gráficos de los datos semanales. ¿Parece haber algún patrón?
+
+```{r, warning=FALSE, message=FALSE}
+
+#Se carga la libreria ISLR:
+library(ISLR)
+
+#Se hace el llamado a los datos a utilizar (Weekly) de la libreria ISLR:
+data(Weekly)
+attach(Weekly)
+
+
+#Se visualizan las caracteristicas de los datos del dataframe:
+summary(Weekly)
+
+#Se visualizan los primeros 5 datos iniciales y finales del dataframe:
+rbind(head(Weekly,5), tail(Weekly,5))
+
+#Se crea la matriz de correlacion:
+Correlacion_Weekly <- round(cor(Weekly[,-9]),2)
+
+#Se grafica la parte superior de la matriz de correlacion:
+col <- colorRampPalette(c("#E30052","#9FD5D1","#FF8000"))
+corrplot(Correlacion_Weekly, method = "pie", type = "upper", shade.col = NA,
+         tl.col = "black", tl.srt = 45, addCoef.col = "black",
+         addshade = "all", col = col(300))
+
+#se hace un diagrama de pares junto con las correlaciones
+chart.Correlation(Weekly[,-9], histogram = FALSE, pch = 19)
+```
+
+### Solucion enunciado del punto b
+
+Utilice el conjunto de datos completo para realizar una regresión logística con Dirección, como respuesta y las cinco variables de retraso, más Volumen como predictor. Utilice la función de resumen para imprimir los resultados. ¿Alguno de los predictores parece ser estadísticamente significativo? ¿De ser asi, cuales?
+
+```{r}
+Regresion_Logistica = glm(Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, data = Weekly, family = binomial)
+summary(Regresion_Logistica)
+```
+### Solucion enunciado del punto c
+
+Calcule la matriz de confusión y la fracción total de predicciones. Explica lo que te dice la matriz de confusión sobre los tipos de errores cometidos por la regresión logística.
+
+```{r}
+#Calculo de la matriz de confusión
+Probabilidad_Regresion_Logistica <- predict(Regresion_Logistica, type = "response")
+Test_R_Logistica <- rep("Down", length(Probabilidad_Regresion_Logistica))
+Test_R_Logistica[Probabilidad_Regresion_Logistica > 0.5] = "Up"
+Matriz_Confusion <- table(Test_R_Logistica, Direction)
+Matriz_Confusion
+mosaic(Matriz_Confusion, shade = T, colorize = T, 
+       gp = gpar(fill = matrix(c("#E30052","#9FD5D1", "#9FD5D1", "#E30052"), 2, 2)))
+```
+### Solucion enunciado del punto d
+
+Ahora ajuste el modelo de regresión logística usando un período de datos de entrenamiento
+de 1990 a 2008, con Lag2 como único predictor. Calcule la matriz de confusión y la fracción general de predicciones correctas para los datos retenidos (es decir, los datos de 2009 y 2010).
+
+```{r}
+#Se toman los datos que se encuentran en el intervalo [1998,2008]
+Data_Train = (Year < 2009)
+Data_Retenido = Weekly[!Data_Train, ]
+
+segunda_Regresion_Logistica = glm(Direction ~ Lag2, data = Weekly, family = binomial, subset = Data_Train)
+
+Probabilidad_2R_Logistica = predict(segunda_Regresion_Logistica, Data_Retenido, type = "response")
+Test_2R_Logistica = rep("Down", length(Probabilidad_2R_Logistica))
+Test_2R_Logistica[Probabilidad_2R_Logistica > 0.5] = "Up"
+
+Direction_Retenido = Direction[!Data_Train]
+
+#Porcentaje de predicciones correctas
+paste("El porcentaje de predicciones correctas es de ", mean(Test_2R_Logistica == Direction_Retenido)*100, "%")
+
+#Tabla de la segunda matriz de confusión con las consideraciones del enunciado
+table(Test_2R_Logistica, Direction_Retenido)
+
+```
+
+
+### Solucion enunciado del punto e
+
+Repita el punto d usando LDA.
+
+```{r}
+
+#Modelo utilizando LDA 
+Modelo_LDA = lda(Direction ~ Lag2, data = Weekly, subset = Data_Train)
+Test_LDA = predict(Modelo_LDA, Data_Retenido)
+
+#Porcentaje de predicciones correctas
+paste("El porcentaje de predicciones correctas es de ", mean(Test_LDA$class == Direction_Retenido)*100, "%")
+
+#Matriz de confusión por usar  LDA 
+table(Test_LDA$class, Direction_Retenido)
+
+
+```
+
+
+### Solucion enunciado del punto f
+
+Repita  el punto d usando QDA.
+
+```{r}
+
+#Modelo utilizando QDA 
+Modelo_QDA = qda(Direction ~ Lag2, data = Weekly, subset = Data_Train)
+Test_QDA = predict(Modelo_QDA, Data_Retenido)
+
+#Porcentaje de predicciones correctas
+paste("El porcentaje de predicciones correctas es de ", round(mean(Test_QDA$class == Direction_Retenido)*100,1), "%")
+
+#Matriz de confusión por usar  QDA 
+table(Test_QDA$class, Direction_Retenido)
+
+
+```
+
+
+### Solucion enunciado del punto g
+
+Repita  el punto d usando KNN con K = 1.
+
+```{r}
+
+#Implementación para usar KNN
+Train_X = as.matrix(Lag2[Data_Train])
+Test_X = as.matrix(Lag2[!Data_Train])
+Train_Direction = Direction[Data_Train]
+set.seed(1)
+Prediccion_KNN = knn(Train_X, Test_X, Train_Direction, k = 1)
+
+#Porcentaje de predicciones correctas
+paste("El porcentaje de predicciones correctas es de ", round(mean(Prediccion_KNN == Direction_Retenido)*100,1), "%")
+
+#Matriz de confusión por usar  knn 
+table(Prediccion_KNN, Direction_Retenido)
+```
+
+
+### Solucion enunciado del punto i
+
+Experimente con diferentes combinaciones de predictores, incluidas las posibles transformaciones e interacciones, para cada uno de los métodos. Informe las variables, el método y la matriz de confusión asociada que parece proporcionar los mejores resultados sobre los datos retenidos. Tenga en cuenta que también debe experimentar con los valores de K en el clasificador KNN.
+
+```{r}
+# Regresión logistica con Lag1 y Lag2: 
+Regresion_Logistica_3 = glm(Direction ~ Lag1 + Lag2, data = Weekly, family = binomial, subset = Data_Train)
+Probabilidad_Regresion_3 = predict(Regresion_Logistica_3, Data_Retenido, type = "response")
+Regresion_Logistica_Test_3 = rep("Down", length(Probabilidad_Regresion_3))
+Regresion_Logistica_Test_3[Probabilidad_Regresion_3 > 0.5] = "Up"
+Direction_Retenido_3 = Direction[!Data_Train]
+
+# Porcentaje de predicciones correctas 
+paste("El porcentaje de predicciones correctas es de ", round(mean(Regresion_Logistica_Test_3 == Direction_Retenido_3)*100,1), "%")
+
+# Matriz de confusión por usar  Regresion logistica con Lag1 y Lag2: 
+table(Regresion_Logistica_Test_3, Direction_Retenido)
+
+```
+
+```{r}
+# Regresión logistica con Lag1, Lag2 y Lag 4: 
+Regresion_Logistica_4 = glm(Direction ~ Lag1 + Lag2+Lag4, data = Weekly, family = binomial, subset = Data_Train)
+Probabilidad_Regresion_4 = predict(Regresion_Logistica_4, Data_Retenido, type = "response")
+Regresion_Logistica_Test_4 = rep("Down", length(Probabilidad_Regresion_4))
+Regresion_Logistica_Test_4[Probabilidad_Regresion_4 > 0.5] = "Up"
+Direction_Retenido_4 = Direction[!Data_Train]
+
+#Porcentaje de predicciones correctas 
+paste("El porcentaje de predicciones correctas es de ", round(mean(Regresion_Logistica_Test_4 == Direction_Retenido)*100,1), "%")
+
+# Matriz de confusión por usar  Regresion logistica con Lag1, Lag2 y Lag4: 
+table(Regresion_Logistica_Test_4, Direction_Retenido)
+
+```
+
+```{r}
+#LDA con Lag1 y Lag2: 
+LDA_2 = lda(Direction ~ Lag2 + Lag1, data = Weekly, subset = Data_Train)
+Test_LDA_2 = predict(LDA_2, Data_Retenido)
+#table(Test_LDA_2$class, Direction_Retenido)
+
+#Porcentaje de predicciones correctas 
+paste("El porcentaje de predicciones correctas es de ", round(mean(Test_LDA_2$class == Direction_Retenido)*100,1), "%")
+
+# Matriz de confusión por LDA con Lag1 y Lag2: 
+table(Test_LDA_2$class, Direction_Retenido)
+
+
+```
+
+```{r}
+#LDA con Lag1, Lag2 y Lag4: 
+LDA_3 = lda(Direction ~ Lag2 + Lag1 + Lag4, data = Weekly, subset = Data_Train)
+Test_LDA_3 = predict(LDA_3, Data_Retenido)
+
+#Porcentaje de predicciones correctas 
+paste("El porcentaje de predicciones correctas es de ", round(mean(Test_LDA_3$class == Direction_Retenido)*100,1), "%")
+
+# Matriz de confusión por LDA con Lag1, Lag2 y Lag4: 
+table(Test_LDA_3$class, Direction_Retenido)
+```
+
+```{r}
+#LDA con iteracción entre Lag1 y Lag2: 
+LDA_4 = lda(Direction ~ Lag2:Lag1, data = Weekly, subset = Data_Train)
+Test_LDA_4 = predict(LDA_4, Data_Retenido)
+
+#Porcentaje de predicciones correctas 
+paste("El porcentaje de predicciones correctas es de ", round(mean(Test_LDA_4$class == Direction_Retenido)*100,1), "%")
+
+# Matriz de confusión por LDA con iteracción entre Lag1 y Lag2:
+table(Test_LDA_4$class, Direction_Retenido)
+```
+```{r}
+#LDA con interacción entre Lag1 y Lag2, entre Lag2 y Lag4: 
+LDA_5 = lda(Direction ~ Lag2:Lag1+Lag2:Lag4, data = Weekly, subset = Data_Train)
+Test_LDA_5 = predict(LDA_5, Data_Retenido)
+
+#Porcentaje de predicciones correctas 
+paste("El porcentaje de predicciones correctas es de ", round(mean(Test_LDA_5$class == Direction_Retenido)*100,1), "%")
+
+# Matriz de confusión por LDA con interacción entre Lag1 y Lag2, entre Lag2 y Lag4: 
+table(Test_LDA_5$class, Direction_Retenido)
+```
+```{r}
+#QDA con interacción entre Lag1 y Lag2, entre Lag2 y Lag4: 
+QDA_2 = qda(Direction ~ Lag2:Lag1+Lag2:Lag4, data = Weekly, subset = Data_Train)
+Test_QDA_2 = predict(QDA_2, Data_Retenido)$class
+
+#Porcentaje de predicciones correctas 
+paste("El porcentaje de predicciones correctas es de ", round(mean(Test_QDA_2 == Direction_Retenido)*100,1), "%")
+
+# Matriz de confusión por QDA con interacción entre Lag1 y Lag2, entre Lag2 y Lag4: 
+table(Test_QDA_2, Direction_Retenido)
+```
+
+```{r}
+#QDA con interacción entre Lag1 y Lag2, entre Lag2 y Lag4 y por ultimo entre Lag1 y Lag4:
+QDA_3 = qda(Direction ~ Lag2:Lag1+Lag2:Lag4+Lag1:Lag4, data = Weekly, subset = Data_Train)
+Test_QDA_3 = predict(QDA_3, Data_Retenido)$class
+
+#Porcentaje de predicciones correctas 
+paste("El porcentaje de predicciones correctas es de ", round(mean(Test_QDA_3 == Direction_Retenido)*100,1), "%")
+
+# Matriz de confusión por QDA con interacción entre Lag1 y Lag2, entre Lag2 y Lag4 y por ultimo entre Lag1 y Lag4:
+table(Test_QDA_3, Direction_Retenido)
+```
+```{r}
+#QDA con Lag2 y Raiz de Lag2:
+QDA_4 = qda(Direction ~ Lag2 + sqrt(abs(Lag2)),  data = Weekly, subset = Data_Train)
+Test_QDA_4 = predict(QDA_4, Data_Retenido)$class
+
+#Porcentaje de predicciones correctas 
+paste("El porcentaje de predicciones correctas es de ", round(mean(Test_QDA_4 == Direction_Retenido)*100,1), "%")
+
+# Matriz de confusión por QDA con Lag2 y Raiz de Lag2:
+table(Test_QDA_4, Direction_Retenido)
+```
+```{r}
+#QDA con Lag2 y Raiz de Lag2, Lag1 y Raiz de Lag1: 
+QDA_5 = qda(Direction ~ Lag2 + sqrt(abs(Lag2)) + Lag1 + sqrt(abs(Lag1)),  data = Weekly, subset = Data_Train)
+Test_QDA_5 = predict(QDA_5, Data_Retenido)$class
+
+#Porcentaje de predicciones correctas 
+paste("El porcentaje de predicciones correctas es de ", round(mean(Test_QDA_5 == Direction_Retenido)*100,1), "%")
+
+# Matriz de confusión por QDA con Lag2 y Raiz de Lag2, Lag1 y Raiz de Lag1:  
+table(Test_QDA_5, Direction_Retenido)
+```
+```{r}
+#KNN con K=10: 
+KNN_10 = knn(Train_X, Test_X, Train_Direction, k = 10)
+
+#Porcentaje de predicciones correctas 
+paste("El porcentaje de predicciones correctas es de ", round(mean(KNN_10 == Direction_Retenido)*100,1), "%")
+
+# Matriz de confusión con KNN con K=10: 
+table(KNN_10, Direction_Retenido)
+```
+```{r}
+#KNN con K=50: 
+KNN_50 = knn(Train_X, Test_X, Train_Direction, k = 50)
+
+#Porcentaje de predicciones correctas 
+paste("El porcentaje de predicciones correctas es de ", round(mean(KNN_50 == Direction_Retenido)*100,1), "%")
+
+# Matriz de confusión con KNN con K=50:  
+table(KNN_50, Direction_Retenido)
+```
+```{r}
+#KNN con K=100: 
+KNN_100 = knn(Train_X, Test_X, Train_Direction, k = 100)
+
+#Porcentaje de predicciones correctas 
+paste("El porcentaje de predicciones correctas es de ", round(mean(KNN_100 == Direction_Retenido)*100,1), "%")
+
+# Matriz de confusión con KNN con K=100:  
+table(KNN_100, Direction_Retenido)
+```
+```{r}
+#KNN con K=200: 
+KNN_200 = knn(Train_X, Test_X, Train_Direction, k = 200)
+
+#Porcentaje de predicciones correctas 
+paste("El porcentaje de predicciones correctas es de ", round(mean(KNN_200 == Direction_Retenido)*100,1), "%")
+
+# Matriz de confusión pcon KNN con K=200:
+table(KNN_200, Direction_Retenido)
+```

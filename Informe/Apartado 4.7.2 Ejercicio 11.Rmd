@@ -1,0 +1,163 @@
+---
+title: "Apartado 4.7.2 Ejercicio 11"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+date: "29/11/2020"
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+Librerias a utilizar 
+```{r, warning=FALSE, message=FALSE}
+library(ISLR)
+library(corrplot)
+library(psych)
+library(MASS)
+library(class)
+library(Hmisc)
+library(PerformanceAnalytics)
+library(ggplot2)
+library(vcd)
+library(GGally)
+library(caret)
+
+```
+
+## Ejercicio 11
+
+En este problema, se  un modelo para predecir si un automóvil determinado obtiene un consumo alto o bajo de combustible basado en el conjunto de datos Auto.
+
+### Solucion enunciado del punto a
+
+Cree una variable binaria, mpg01, que contenga un 1 si mpg contiene un valor por encima de su mediana y un 0 si mpg contiene un valor por debajo de su mediana. Puede calcular la mediana usando la función median (). Tenga en cuenta que puede resultarle útil utilizar la función data.frame () para crear un único conjunto de datos que contenga tanto mpg01 como las otras variables automáticas.
+ 
+```{r, warning=FALSE, message=FALSE}
+summary(Auto)
+attach(Auto)
+mpg01 = rep(0, length(mpg))
+mpg01[mpg > median(mpg)] = 1
+Auto = data.frame(Auto, mpg01)
+rbind(head(Auto,5), tail(Auto,5))
+str(Auto)
+```
+
+### Solucion enunciado del punto b
+
+Explore los datos gráficamente para investigar la asociación entre mpg01 y las otras funciones. ¿Cuál de las otras características parece más útil para predecir mpg01? Los diagramas de dispersión y los diagramas de caja pueden ser herramientas útiles para responder a esta pregunta. Describe tus hallazgos.
+
+```{r}
+Matriz_Correlacion <- round(cor(Auto[,-9]),2)
+
+#Matriz de correlación: 
+
+col <- colorRampPalette(c("#E30052","#9FD5D1","#FF8000"))
+corrplot(Matriz_Correlacion, method = "shade", type = "lower", shade.col = NA,
+         tl.col = "black", tl.srt = 45, addCoef.col = "black",
+         addshade = "all", col = col(300), diag = FALSE)
+#DOarama de pares:
+chart.Correlation(Auto[,-9], histogram = FALSE, pch = 19) 
+```
+### Solucion enunciado del punto c
+
+Divida los datos en un conjunto de entrenamiento y un conjunto de prueba.
+
+```{r}
+set.seed(123)
+indice <- createDataPartition(y = Auto$mpg01, p = 0.7, list = FALSE, times = 1)
+Auto_Train = Auto[indice, ]
+Auto_Test = Auto[-indice, ]
+MPG01_Test = mpg01[-indice]
+```
+### Solucion enunciado del punto d
+
+Realice LDA en los datos de entrenamiento para predecir mpg01 usando las variables que parecían más asociadas con mpg01 en (b). ¿Cuál es el error de prueba del modelo obtenido?
+
+```{r}
+# LDA
+LDA1 = lda(mpg01 ~ cylinders + weight + displacement + horsepower, data = Auto_Train)
+LDA_Prediccion = predict(LDA1, Auto_Test)
+Proporcion_correcta = mean(LDA_Prediccion$class == MPG01_Test)
+round(Proporcion_correcta,3)
+paste("Error de prueba modelo LDA =", round((1 - Proporcion_correcta)*100,1), "%")
+```
+
+
+### Solucion enunciado del punto e
+
+Realice QDA en los datos de entrenamiento para predecir mpg01 usando las variables que parecían más asociadas con mpg01 en (segundo). ¿Cuál es el error de prueba del modelo obtenido?
+
+```{r}
+# QDA
+QDA_1 = qda(mpg01 ~ cylinders + weight + displacement + horsepower, data = Auto_Train)
+QDA_Prediccion = predict(QDA_1, Auto_Test)
+Proporcion_correcta = mean(QDA_Prediccion$class == MPG01_Test)
+round(Proporcion_correcta,3)
+paste("Error de prueba modelo QDA =", round((1 - Proporcion_correcta)*100,1), "%")
+```
+
+### Solucion enunciado del punto f
+
+Realice una regresión logística en los datos de entrenamiento para predecir mpg01 usando las variables que parecían más asociadas con mpg01 en (b). ¿Cuál es el error de prueba del modelo obtenido?
+
+```{r}
+#REGRESION LOGISTICA
+Regresion_Logistica_1 = glm(mpg01 ~ cylinders + weight + displacement + horsepower, data = Auto_Train, 
+    family = binomial)
+Regresion_Logistica_Predicion = predict(Regresion_Logistica_1, Auto_Test, type = "response")
+Regresion_Logistica_Test = rep(0, length(Regresion_Logistica_Predicion))
+Regresion_Logistica_Test[Regresion_Logistica_Predicion > 0.5] = 1
+Proporcion_correcta = mean(Regresion_Logistica_Test == MPG01_Test)
+round(Proporcion_correcta,3)
+paste("Error de prueba regresion logistica =", round((1 - Proporcion_correcta)*100,1), "%")
+```
+
+
+### Solucion enunciado del punto g
+
+Realice KNN sobre los datos de entrenamiento, con varios valores de K, para predecir mpg01. Utilice solo las variables que parezcan más asociadas con mpg01 en (b). ¿Qué errores de prueba obtienes? ¿Qué valor de K parece funcionar mejor en este conjunto de datos?
+
+```{r}
+Train_X = cbind(cylinders, weight, displacement, horsepower)[indice, ]
+Test_X = cbind(cylinders, weight, displacement, horsepower)[-indice, ]
+Train_mpg01 = mpg01[indice]
+set.seed(1)
+ 
+# Usando KNN(k=1)
+KNN1 = knn(Train_X, Test_X, Train_mpg01, k = 1)
+Proporcion_correcta = mean(KNN1 == MPG01_Test)
+round(Proporcion_correcta,3)
+paste("Error de prueba con KNN (K=1) =", round((1 - Proporcion_correcta)*100,1), "%")
+
+# Usando KNN(k=10)
+KNN1 = knn(Train_X, Test_X, Train_mpg01, k = 10)
+Proporcion_correcta = mean(KNN1 == MPG01_Test)
+round(Proporcion_correcta,3)
+paste("Error de prueba con KNN (K=10) =", round((1 - Proporcion_correcta)*100,1), "%")
+
+# Usando KNN(k=50)
+KNN1 = knn(Train_X, Test_X, Train_mpg01, k = 50)
+Proporcion_correcta = mean(KNN1 == MPG01_Test)
+round(Proporcion_correcta,3)
+paste("Error de prueba con KNN (K=50) =", round((1 - Proporcion_correcta)*100,1), "%")
+
+# Usando KNN(k=100)
+KNN1 = knn(Train_X, Test_X, Train_mpg01, k = 100)
+Proporcion_correcta = mean(KNN1 == MPG01_Test)
+round(Proporcion_correcta,3)
+paste("Error de prueba con KNN (K=100) =", round((1 - Proporcion_correcta)*100,1), "%")
+
+```

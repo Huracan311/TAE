@@ -1,0 +1,163 @@
+---
+title: "Apartado 4.7.2 Ejercicio 13"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+date: "29/11/2020"
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+
+## Ejercicio 13
+Usando el conjunto de datos de Boston, ajuste los modelos de clasificación para predecir si un suburbio determinado tiene una tasa de criminalidad por encima o por debajo de la mediana. Explore los modelos de regresión logística, LDA y KNN utilizando varios subconjuntos de predictores. Describe tus hallazgos.
+
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+library(ISLR)
+library(corrplot)
+library(psych)
+library(MASS)
+library(class)
+library(Hmisc)
+library(PerformanceAnalytics)
+library(ggplot2)
+library(vcd)
+library(GGally)
+library(caret)
+```
+
+## Carga de los Datos Boston
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+attach(Boston)
+str(Boston)
+#Crimen:
+Clase_Crimen = rep(0, length(crim))
+Clase_Crimen[crim > median(crim)] = 1
+Boston = data.frame(Boston, Clase_Crimen)
+```
+
+## Grafica de matriz de correlación
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+Matriz_Correlacion <- round(cor(Boston[,]),2)
+Matriz_Correlacion <- round(cor(Boston),2)
+#Matriz_Correlacion
+#summary(Matriz_Correlacion)
+col <- colorRampPalette(c("#E30052","#9FD5D1","#FF8000"))
+corrplot(Matriz_Correlacion, method = "pie", type = "lower", shade.col = NA,
+         tl.col = "black", tl.srt = 45, addshade = "all", col = col(400), diag = FALSE)
+```
+
+## Se crean los datos de entreno y de prueba 
+
+```{r, warning=FALSE}
+#Se crean los datos de entreno y de prueba
+set.seed(10)
+train <- createDataPartition(y = Boston$Clase_Crimen, p = 0.6, list = FALSE, times = 1)
+Boston_Train = Boston[train, ]
+Boston_Test = Boston[-train, ]
+Clase_Crimen_test = Clase_Crimen[-train]
+```
+
+## Se realiza los modelos utilizando regresión 
+### Regresión Logistica 1
+
+```{r, warning=FALSE}
+#REGRESION LOGISTICA 1: Clase crimen con rspecto a todas las variables excepto ella misma
+Regresion_Logistica_1 = glm(Clase_Crimen ~ . - Clase_Crimen - crim, data = Boston, subset = train,
+                 family = binomial, 
+    )
+
+Probabilidad_Regresion_Logistica_1 = predict(Regresion_Logistica_1, Boston_Test, type = "response")
+Prediccion_Regresion_Logistica_1 = rep(0, length(Probabilidad_Regresion_Logistica_1))
+Prediccion_Regresion_Logistica_1[Probabilidad_Regresion_Logistica_1 > 0.5] = 1
+mean(Prediccion_Regresion_Logistica_1 != Clase_Crimen_test)*100
+```
+
+### Regresión logistica 2
+
+```{r, warning=FALSE}
+#REGRESION LOGISTICA 2:Clase crimen con rspecto a todas las variables sin usar clase_crimen,crim,zn,chass,rm,ptrati,black,medv
+Regresion_Logistica_1 = glm(Clase_Crimen ~ . -Clase_Crimen -crim -zn -chas -rm -ptratio -black -medv,
+                 data = Boston, subset = train, family = binomial)
+
+Probabilidad_Regresion_Logistica_1 = predict(Regresion_Logistica_1, Boston_Test, type = "response")
+Prediccion_Regresion_Logistica_1 = rep(0, length(Probabilidad_Regresion_Logistica_1))
+Prediccion_Regresion_Logistica_1[Probabilidad_Regresion_Logistica_1 > 0.5] = 1
+mean(Prediccion_Regresion_Logistica_1 != Clase_Crimen_test)*100
+```
+
+## Se realiza los modelos utilizando LDA
+
+```{r, warning=FALSE}
+# Modelos LDA:
+#LDA 1
+LDA_1 = lda(Clase_Crimen ~ . -Clase_Crimen -crim, data = Boston, subset = train)
+prediccion_LDA_1 = predict(LDA_1, Boston_Test)
+mean(prediccion_LDA_1$class != Clase_Crimen_test)*100
+
+# LDA 2
+LDA_2 = lda(Clase_Crimen ~ . -Clase_Crimen -crim -zn -chas -rm -ptratio -black -medv,
+                 data = Boston, subset = train)
+prediccion_LDA_2 = predict(LDA_2, Boston_Test)
+mean(prediccion_LDA_2$class != Clase_Crimen_test)*100
+
+#LDA 3
+LDA_3 = lda(Clase_Crimen ~ . - Clase_Crimen - crim - chas - tax - lstat - indus - age, 
+              data = Boston, subset = train)
+prediccion_LDA_2 = predict(LDA_3, Boston_Test)
+mean(prediccion_LDA_2$class != Clase_Crimen_test)*100
+```
+
+## Se realiza los modelos utilizando KNN
+
+```{r, warning=FALSE}
+# KNN
+Train_X = cbind(zn, indus, chas, nox, rm, age, dis, rad, tax, ptratio, black, 
+                 lstat, medv)[train, ]
+Test_X = cbind(zn, indus, chas, nox, rm, age, dis, rad, tax, ptratio, black, 
+                lstat, medv)[-train, ]
+Train_Crimen_Class = Clase_Crimen[train]
+set.seed(1)
+
+# KNN(k=1)
+KNN_1 = knn(Train_X, Test_X, Train_Crimen_Class, k = 1)
+mean(KNN_1 != Clase_Crimen_test)*100
+
+# KNN(k=10)
+KNN_2 = knn(Train_X, Test_X, Train_Crimen_Class, k = 10)
+mean(KNN_2 != Clase_Crimen_test)*100
+
+# KNN(k=100)
+KNN_3 = knn(Train_X, Test_X, Train_Crimen_Class, k = 100)
+mean(KNN_3 != Clase_Crimen_test)*100
+
+# KNN(k=10) CON UN SUBCONJUNTO DE LAS VARIABLES
+Train_X = cbind(zn, indus, nox, age, dis, rad, ptratio, black, medv)[train, ]
+Test_X = cbind(zn, indus, nox, age, dis, rad, ptratio, black, medv)[-train, ]
+
+#(K=1)
+KNN_4 = knn(Train_X, Test_X, Train_Crimen_Class, k = 1)
+mean(KNN_4 != Clase_Crimen_test)*100
+#(K=10)
+KNN_5 = knn(Train_X, Test_X, Train_Crimen_Class, k = 10)
+mean(KNN_5 != Clase_Crimen_test)*100
+
+```
+
+
+

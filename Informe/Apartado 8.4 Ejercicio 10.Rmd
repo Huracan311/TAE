@@ -1,0 +1,172 @@
+---
+title: "Apartado8.4 Ejercicio 10"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+Librerias a utilizar 
+```{r message=FALSE, warning=FALSE}
+library(ISLR)
+library(gbm)
+library(glmnet)
+library(randomForest)
+
+```
+
+## Ejercicio 10
+
+Ahora usamos el impulso para predecir el salario en el conjunto de datos de los bateadores.
+
+### Solucion enunciado del punto a
+Elimine las observaciones para las que se desconoce la información salarial y luego transforme los salarios en logaritmo.
+
+```{r message=FALSE, warning=FALSE}
+sum(is.na(Hitters$Salary))
+Hitters = Hitters[-which(is.na(Hitters$Salary)), ]
+sum(is.na(Hitters$Salary))
+Hitters$Salary = log(Hitters$Salary)
+
+```
+
+### Solucion enunciado del punto b
+Cree un conjunto de entrenamiento que consta de las primeras 200 observaciones y un conjunto de prueba que consta de las observaciones restantes.
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+train = 1:200
+Hitters_Train = Hitters[train, ]
+Hitters_Test = Hitters[-train, ]
+```
+### Solucion enunciado del punto c
+
+Realice un refuerzo en el conjunto de entrenamiento con 1000 árboles para un rango de valores del parámetro de contracción λ. Produzca un gráfico con diferentes valores de contracción en el eje xy el correspondiente conjunto de entrenamiento MSE en el eje y.
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+set.seed(103)
+Learning_Rate = 10 ^ seq(-10, -0.1, by = 0.1)
+
+Learning_Rate.length = length(Learning_Rate)
+Train_Errors = rep(NA, Learning_Rate.length)
+Test_Errors = rep(NA, Learning_Rate.length)
+
+for (i in 1:Learning_Rate.length) {
+    Hitters_Boosting = gbm(Salary ~ ., data = Hitters_Train, distribution = "gaussian", 
+                            n.trees = 1000, shrinkage = Learning_Rate[i])
+    
+    Train_Pred = predict(Hitters_Boosting, Hitters_Train, n.trees = 1000)
+    test.pred = predict(Hitters_Boosting, Hitters_Test, n.trees = 1000)
+    
+    Train_Errors[i] = mean((Hitters_Train$Salary - Train_Pred)^2)
+    Test_Errors[i] = mean((Hitters_Test$Salary - test.pred)^2)
+}
+
+plot(Learning_Rate, Train_Errors, type = "b", xlab = "Tasa de aprendizaje", ylab = "MSE de entrenamiento", 
+    col = "chocolate3", pch = 20)
+min(Train_Errors)
+which.min(Train_Errors)
+Learning_Rate[which.min(Train_Errors)]
+
+```
+### Solucion enunciado del punto d
+
+Genere un gráfico con diferentes valores de contracción en el eje x y el conjunto de prueba correspondiente MSE en el eje y.
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+plot(Learning_Rate, Test_Errors, type = "b", xlab = "Tasa de aprendizaje", ylab = "MSE de prueba", 
+    col = "cyan4", pch = 20)
+
+min.test.error = round(min(Test_Errors),5)
+paste("EL minimo error de prueba es: ", min.test.error)
+min.Learning_Rate = round(Learning_Rate[which.min(Test_Errors)],5)
+paste("La tasa de aprendizaje que da un minimo error de prueba es de :", min.Learning_Rate)
+
+```
+
+### Solucion enunciado del punto e
+
+Compare el MSE de prueba del refuerzo con el MSE de prueba que resulta de aplicar dos de los enfoques de regresión que se ven en los Capítulos 3 y 6.
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+#Usando regresion lineal multiple
+LM_Fit = lm(Salary ~ ., data = Hitters_Train)
+LM_Pred = predict(LM_Fit, Hitters_Test)
+MSE = round(mean((Hitters_Test$Salary - LM_Pred)^2),5)
+paste("el MSE usando un modelo de regresion lineal es de: ", MSE)
+
+#Usando Ridge Regression y Lasso
+set.seed(134)
+x = model.matrix(Salary ~ ., data = Hitters_Train)
+y = Hitters_Train$Salary
+X_Test = model.matrix(Salary ~ ., data = Hitters_Test)
+
+#Ridge Regression
+Ridge_Fit = glmnet(x, y, alpha = 0)
+Ridge_Pred = predict(Ridge_Fit, s = 0.01, newx = X_Test)
+MSE = round(mean((Hitters_Test$Salary - Ridge_Pred)^2),5)
+paste("el MSE usando un modelo Ridge Regression es de: ", MSE)
+
+#Lasso
+Lasso_Fit = glmnet(x, y, alpha = 1)
+Lasso_Pred = predict(Lasso_Fit, s = 0.01, newx = X_Test)
+MSE = round(mean((Hitters_Test$Salary - Lasso_Pred)^2),5)
+paste("el MSE usando un modelo Lasso es de: ", MSE)
+
+```
+
+### Solucion enunciado del punto f
+
+ ¿Qué variables parecen ser los predictores más importantes en el modelo impulsado?
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+Mejor_Boost = gbm(Salary ~ ., data = Hitters_Train, distribution = "gaussian", 
+                  n.trees = 1000, shrinkage = Learning_Rate[which.min(Test_Errors)])
+summary(Mejor_Boost)
+
+```
+
+### Solucion enunciado del punto g
+
+Ahora aplique embolsado al conjunto de entrenamiento. ¿Cuál es el equipo de prueba MSE para este enfoque?
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+set.seed(21)
+RF_Hitters = randomForest(Salary ~ ., data = Hitters_Train, ntree = 500, mtry = 19)
+RF_Pred = predict(RF_Hitters, Hitters_Test)
+error = round(mean((Hitters_Test$Salary - RF_Pred)^2),5)
+paste("EL MSE de prueba para el modelo bagging es de: ", error)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

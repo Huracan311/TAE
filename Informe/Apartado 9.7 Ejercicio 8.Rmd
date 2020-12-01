@@ -1,0 +1,197 @@
+---
+title: "Apartado 9.7 Ejercicio 8"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+Librerias a utilizar 
+```{r message=FALSE, warning=FALSE}
+library(ISLR)
+library(e1071)
+library(ggplot2)
+```
+
+## Ejercicio 8
+Este problema involucra el conjunto de datos OJ que es parte del paquete  ISLR
+
+### Enunciado a:
+Cree un conjunto de entrenamiento que contenga una muestra aleatoria de 800 observaciones y un conjunto de prueba que contenga las observaciones restantes.
+
+```{r message=FALSE, warning=FALSE}
+set.seed(700)
+train = sample(nrow(OJ), 800)
+OJ_Train = OJ[train, ]
+OJ_Test = OJ[-train, ]
+```
+
+### Enunciado b:
+Ajuste un clasificador de vector de soporte a los datos de entrenamiento usando costo = 0.01, con Compra como respuesta y las otras variables como predictores. Utilice la función de summary() para producir estadísticas de resumen y describir los resultados obtenidos.
+
+```{r message=FALSE, warning=FALSE}
+SVM_Lineal = svm(Purchase ~ ., kernel = "linear", data = OJ_Train, cost = 0.01)
+summary(SVM_Lineal)
+```
+
+### Enunciado c:
+¿Cuáles son las tasas de error de entrenamiento y prueba?
+
+```{r message=FALSE, warning=FALSE}
+Predic_Train = predict(SVM_Lineal, OJ_Train)
+table(predicho = Predic_Train, real = OJ_Train$Purchase)
+Error_Train = round(mean(Predic_Train != OJ_Train$Purchase),4)
+paste("El error de entrenamiento es de:", Error_Train)
+
+Predic_Test = predict(SVM_Lineal, OJ_Test)
+table(predicho = Predic_Test, OJ_Test$Purchase)
+Error_Test = round(mean(Predic_Test != OJ_Test$Purchase),4)
+paste("El error con los datos de validación es de: :", Error_Test)
+
+```
+
+### Enunciado d:
+Utilice la función tune () para seleccionar un costo óptimo. Considere valores en el rango de 0.01 a 10.
+
+```{r message=FALSE, warning=FALSE}
+set.seed(200)
+Model_Tuning = tune(svm, Purchase ~ ., data = OJ_Train, kernel = "linear", 
+                    ranges = list(cost = 10^seq(-2, 1, by = 0.25)))
+summary(Model_Tuning)
+
+ggplot(data = Model_Tuning$performances, aes(x = cost, y = error)) +
+  geom_line(color = "#9FD5D1") +
+  geom_point(color = "#E30052") +
+  labs(title = "Error de clasificación vs costo") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_bw() + theme(legend.position = "none")
+
+```
+
+### Enunciado e:
+Calcule las tasas de error de entrenamiento y prueba utilizando este nuevo valor de costo.
+
+```{r message=FALSE, warning=FALSE}
+Model_Tuning$best.model
+Mejor_SVM_Lineal = svm(Purchase ~ ., kernel = "linear", data = OJ_Train, 
+                       cost =Model_Tuning$best.parameters$cost)
+Predic_Train = predict(Mejor_SVM_Lineal, OJ_Train)
+table(predicho = Predic_Train, real = OJ_Train$Purchase)
+Error_Train = round(mean(Predic_Train != OJ_Train$Purchase),4)
+paste("El error de entrenamiento con el mejor SVM lineal es de ", Error_Train)
+
+Predic_Test = predict(Mejor_SVM_Lineal, OJ_Test)
+table(predicho = Predic_Test, real = OJ_Test$Purchase)
+Error_Test = round(mean(Predic_Test != OJ_Test$Purchase),4)
+paste("El error con los datos de validación con el mejor SVM lineal es de:", Error_Test)
+
+```
+
+### Enunciado f:
+Repita las partes (b) a (e) usando una máquina de vectores de soporte con un núcleo radial. Utilice el valor predeterminado para gamma.
+
+```{r message=FALSE, warning=FALSE}
+set.seed(600)
+SVM_Radial = svm(Purchase ~ ., data = OJ_Train, kernel = "radial")
+summary(SVM_Radial)
+
+Predic_Train = predict(SVM_Radial, OJ_Train)
+table(predicho = Predic_Train, real = OJ_Train$Purchase)
+Error_Train = round(mean(Predic_Train != OJ_Train$Purchase),4)
+paste("El error de entrenamiento es de: :", Error_Train)
+
+Predic_Test = predict(SVM_Radial, OJ_Test)
+table(predicho = Predic_Test, real = OJ_Test$Purchase)
+Error_Test = round(mean(Predic_Test != OJ_Test$Purchase),4)
+paste("El error con los datos de validación es de: :", Error_Test)
+
+set.seed(400)
+Tuning_Radial = tune(svm, Purchase ~ ., data = OJ_Train, kernel = "radial",
+                     ranges = list(cost = 10^seq(-2, 1, by = 0.25)))
+summary(Tuning_Radial)
+
+ggplot(data = Tuning_Radial$performances, aes(x = cost, y = error)) +
+  geom_line(color = "#9FD5D1") +
+  geom_point(color = "#E30052") +
+  labs(title = "Error de clasificación vs costo") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_bw() + theme(legend.position = "none")
+
+Mejor_SVM_Radial = svm(Purchase ~ ., data = OJ_Train, kernel = "radial", 
+                       cost = Tuning_Radial$best.parameters$cost)
+
+Predic_Train = predict(Mejor_SVM_Radial, OJ_Train)
+table(predicho = Predic_Train, real = OJ_Train$Purchase)
+Error_Train = round(mean(Predic_Train != OJ_Train$Purchase),4)
+paste("El error de entrenamiento con el mejor SVM radial es de: :", Error_Train)
+
+Predic_Test = predict(Mejor_SVM_Radial, OJ_Test)
+table(predicho = Predic_Test, real = OJ_Test$Purchase)
+Error_Test = round(mean(Predic_Test != OJ_Test$Purchase),4)
+paste("El error de validación con el mejor SVM radial es de:", Error_Test)
+
+```
+
+### Enunciado g:
+Repita las partes (b) a (e) usando una máquina de vectores de soporte con un núcleo polinomial. Establecer grado = 2.
+
+```{r message=FALSE, warning=FALSE}
+set.seed(1100)
+SVM_Poly = svm(Purchase ~ ., data = OJ_Train, kernel = "poly", degree = 2)
+summary(SVM_Poly)
+
+Predic_Train = predict(SVM_Poly, OJ_Train)
+table(predicho = Predic_Train, real = OJ_Train$Purchase)
+Error_Train = round(mean(Predic_Train != OJ_Train$Purchase),4)
+paste("El error de entrenamiento es de: :", Error_Train)
+
+Predic_Test = predict(SVM_Poly, OJ_Test)
+table(predicho = Predic_Test, real = OJ_Test$Purchase)
+Error_Test = round(mean(Predic_Test != OJ_Test$Purchase),4)
+paste("El error con los datos de validación es de: :", Error_Test)
+
+set.seed(100)
+Tuning_Poli = tune(svm, Purchase ~ ., data = OJ_Train, kernel = "poly", degree = 2, 
+    ranges = list(cost = 10^seq(-2, 1, by = 0.25)))
+summary(Tuning_Poli)
+
+ggplot(data = Tuning_Poli$performances, aes(x = cost, y = error)) +
+  geom_line(color = "#9FD5D1") +
+  geom_point(color = "#E30052") +
+  labs(title = "Error de clasificación vs costo") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_bw() + theme(legend.position = "none")
+
+Mejor_SVM_Poly = svm(Purchase ~ ., data = OJ_Train, kernel = "poly", degree = 2, 
+                     cost = Tuning_Poli$best.parameters$cost)
+
+Predic_Train = predict(Mejor_SVM_Poly, OJ_Train)
+table(predicho = Predic_Train, real = OJ_Train$Purchase)
+Error_Train = round(mean(Predic_Train != OJ_Train$Purchase),4)
+paste("El error de entrenamiento con el mejor SVM polinomial es de:", Error_Train)
+
+Predic_Test = predict(Mejor_SVM_Poly, OJ_Test)
+table(predicho = Predic_Test, real = OJ_Test$Purchase)
+Error_Test = round(mean(Predic_Test != OJ_Test$Purchase),4)
+paste("El error de validación con el mejor SVM polinomial es de:", Error_Test)
+```
+
+
+
+
+

@@ -1,0 +1,86 @@
+---
+title: "Apartado8.4 Ejercicio 11"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+Librerias a utilizar 
+```{r message=FALSE, warning=FALSE}
+library(ISLR)
+library(gbm)
+library(randomForest)
+library(tidyverse)
+```
+
+## Ejercicio 12
+Aplique bosques de impulso, ensacado y aleatorio a un conjunto de datos de su elección. Asegúrese de ajustar los modelos en un conjunto de entrenamiento y de evaluar su desempeño en un conjunto de prueba. ¿Qué tan precisos son los resultados en comparación con métodos simples como la regresión lineal o logística? ¿Cuál de estos enfoques produce el mejor rendimiento?
+
+```{r message=FALSE, warning=FALSE}
+set.seed(100)
+train = sample(nrow(College), 0.7* nrow(College))
+Train_College = College[train,]
+Test_College = College[-train,]
+
+# MODELO DE REGRESIÓN LOGISTICA: 
+
+#Probabilidades <= 0.5 corresponderan a universidades no privadas y > 0.5 a universidades privadas
+GLM_Fit = glm(Private ~ ., data = Train_College, family = "binomial")
+GLM_Probs = predict(GLM_Fit, newdata = Test_College, type = "response")
+GLM_Pred = rep("No", length(GLM_Probs))
+GLM_Pred[GLM_Probs > 0.5] = "Yes"
+
+table(Prediccion = GLM_Pred, Valor_real = Test_College$Private[])
+Porc_Acierto = round(mean(GLM_Pred == Test_College$Private)*100,2)
+paste("Rendimiento usando Regresion Logistica =", Porc_Acierto, "%")
+
+# MODELO USANDO BOOSTING
+
+#Se crea una nueva variable binaria en función de la variable Private. Para poder usar la distribucion bernoulli en el parametro distribution
+College$Private01 = ifelse(College$Private == "Yes", 1, 0)
+
+College_Boost = gbm(Private01 ~ ., data = College[train,-1], distribution = "bernoulli", n.trees = 5000) 
+College_Probs = predict(College_Boost, newdata = College[-train,-1], n.trees = 5000)
+College_Predic = rep(0, length(College_Probs))
+College_Predic[College_Probs > 0.5] = 1
+
+table(Prediccion = College_Predic, Valor_real = College$Private01[-train])
+Porc_Acierto = round(mean(College_Predic == College$Private01[-train])*100,2)
+paste("Rendimiento usando Bossting =", Porc_Acierto, "%")
+
+College = College[,-19]
+
+# MODELO USANDO BAGGING
+College_Bagg = randomForest(Private ~ ., data = Train_College, mtry = 17)
+College_Bagg.pred = predict(College_Bagg, newdata = Test_College)
+
+table(Prediccion = College_Bagg.pred, Valor_real = Test_College$Private)
+Porc_Acierto = round(mean(College_Bagg.pred == Test_College$Private)*100,2)
+paste("Rendimiento usando Bossting =", Porc_Acierto, "%")
+
+# MODELO USANDO RANDOM FOREST
+College_RF = randomForest(Private ~ ., data = Train_College, mtry = 10)
+College_RF.pred = predict(College_RF, newdata = Test_College)
+
+table(Prediccion = College_RF.pred, Test_College$Private)
+Porc_Acierto = round(mean(College_RF.pred == Test_College$Private)*100,2)
+paste("Rendimiento usando Bossting =", Porc_Acierto, "%")
+
+```
+

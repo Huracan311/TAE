@@ -1,0 +1,124 @@
+---
+title: "Apartado 9.7 Ejercicio 5"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+Librerias a utilizar 
+```{r message=FALSE, warning=FALSE}
+library(e1071)
+
+```
+
+## Ejercicio 5
+Hemos visto que podemos ajustar una SVM con un kernel no lineal para realizar la clasificación utilizando un límite de decisión no lineal. Ahora veremos que también podemos obtener un límite de decisión no lineal realizando una regresión logística utilizando un límite de decisión no lineal. transformaciones lineales de las características.
+
+### Enunciado a:
+
+Genere un conjunto de datos con n = 500 yp = 2, de modo que las observaciones pertenezcan a dos clases con un límite de decisión cuadrático entre ellas. Por ejemplo, puede hacer esto de la siguiente manera:
+
+x1=runif (500) -0.5
+x2=runif (500) -0.5
+y=1*( x1^2-x2^2 > 0)
+
+```{r message=FALSE, warning=FALSE}
+set.seed(700)
+x1 = runif(500) - 0.5
+x2 = runif(500) - 0.5
+y = 1*(x1^2 - x2^2 > 0)
+
+```
+
+### Enunciado b:
+Trace las observaciones, coloreadas de acuerdo con las etiquetas de su clase.
+Su gráfica debe mostrar X1 en el eje xy X2 en el eje y.
+```{r message=FALSE, warning=FALSE}
+plot(x1[y == 1], x2[y == 1], col = "#E30052", xlab = "X1", ylab = "X2", pch = 4)
+points(x1[y == 0], x2[y == 0], col = "#9FD5D1", pch = 19)
+
+```
+
+### Enunciado c:
+Ajuste un modelo de regresión logística a los datos, usando X1 y X2 como predictores.
+```{r message=FALSE, warning=FALSE}
+datos = data.frame(x1 = x1, x2 = x2, y = y)
+LG_Fit = glm(y ~ ., data = datos, family = binomial)
+summary(LG_Fit)
+
+```
+
+### Enunciado d:
+Aplique este modelo a los datos de entrenamiento para obtener una etiqueta de clase predicha para cada observación de entrenamiento. Trace las observaciones, coloreadas de acuerdo con las etiquetas de clase predichas. El límite de decisión debe ser lineal.
+```{r message=FALSE, warning=FALSE}
+LG_Probs = predict(LG_Fit, newdata = datos, type = "response")
+LG_Pred = ifelse(LG_Probs > 0.5, 1, 0)
+Datos_Pos = datos[LG_Pred == 1, ]
+Datos_Neg = datos[LG_Pred == 0, ]
+plot(Datos_Pos$x1, Datos_Pos$x2, col = "#E30052", xlab = "X1", ylab = "X2", pch = 4)
+points(Datos_Neg$x1, Datos_Neg$x2, col = "#9FD5D1", pch = 19)
+
+```
+
+### Enunciado e:
+Ahora ajuste un modelo de regresión logística a los datos usando no lineales funciones de X1 y X2 como predictores (por ejemplo, X2 1, X1 × X2, log (X2), Etcétera).
+```{r message=FALSE, warning=FALSE}
+LG_NoLineal_Fit = glm(y ~ poly(x1, 3) + poly(x2, 4) + I(x1*x2) , data = datos, family = binomial)
+summary(LG_NoLineal_Fit)
+
+```
+
+### Enunciado f:
+Aplique este modelo a los datos de entrenamiento para obtener una etiqueta de clase predicha para cada observación de entrenamiento. Trace las observaciones, coloreadas de acuerdo con las etiquetas de clase predichas. El límite de decisión debe ser obviamente no lineal. Si no es, luego repita (a) - (e) hasta que encuentre un ejemplo en el que las etiquetas de clase predichas son obviamente no lineales.
+```{r message=FALSE, warning=FALSE}
+LG_NoLineal_Probs = predict(LG_NoLineal_Fit, datos, type = "response")
+LG_NoLineal_Pred = ifelse(LG_NoLineal_Probs > 0.5, 1, 0)
+Datos_Pos = datos[LG_NoLineal_Pred == 1, ]
+Datos_Neg = datos[LG_NoLineal_Pred == 0, ]
+plot(Datos_Pos$x1, Datos_Pos$x2, col = "#E30052", xlab = "X1", ylab = "X2", pch = 4)
+points(Datos_Neg$x1, Datos_Neg$x2, col = "#9FD5D1", pch = 19)
+
+```
+
+
+### Enunciado g:
+Ajuste un clasificador de vectores de soporte a los datos con X1 y X2 como predictores. Obtenga una predicción de clase para cada observación de entrenamiento.
+Grafique las observaciones, coloreadas según el pronóstico etiquetas de clase.
+```{r message=FALSE, warning=FALSE}
+SVM_Fit = svm(as.factor(y) ~ ., data = datos, kernel = "linear", cost = 1)
+SVM_Pred = predict(SVM_Fit, datos)
+Datos_Pos = datos[SVM_Pred == 1, ]
+Datos_Neg = datos[SVM_Pred == 0, ]
+plot(Datos_Pos$x1, Datos_Pos$x2, col = "#E30052", xlab = "X1", ylab = "X2", pch = 4)
+points(Datos_Pos$x1, Datos_Pos$x2, col = "#9FD5D1", pch = 19)
+
+```
+
+### Enunciado h:
+Ajuste una SVM usando un kernel no lineal a los datos. Obtener una clase predicción para cada observación de entrenamiento. Grafique las observaciones,coloreado de acuerdo con las etiquetas de clase predichas
+```{r message=FALSE, warning=FALSE}
+SVM_Fit = svm(as.factor(y) ~ ., datos, gamma = 1)
+SVM_Pred = predict(SVM_Fit, datos)
+Datos_Pos = datos[SVM_Pred == 1, ]
+Datos_Neg = datos[SVM_Pred == 0, ]
+plot(Datos_Pos$x1, Datos_Pos$x2, col = "#E30052", xlab = "X1", ylab = "X2", pch = 4)
+points(Datos_Neg$x1, Datos_Neg$x2, col = "#9FD5D1", pch = 19)
+
+```
+

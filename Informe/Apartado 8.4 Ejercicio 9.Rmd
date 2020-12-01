@@ -1,0 +1,151 @@
+---
+title: "Apartado8.4 Ejercicio 9"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+Librerias a utilizar 
+```{r message=FALSE, warning=FALSE}
+library(ISLR)
+library(tree)
+attach(OJ)
+library("caret")
+```
+
+## Ejercicio 9
+
+Este problema involucra el conjunto de datos OJ que es parte del ISLR paquete.
+
+### Solucion enunciado del punto a
+Cree un conjunto de entrenamiento que contenga una muestra aleatoria de 800 observaciones y un conjunto de prueba que contiene las observaciones restantes.
+
+
+```{r message=FALSE, warning=FALSE}
+set.seed(1000)
+train = sample(nrow(OJ), 800)
+OJ_Train = OJ[train, ]
+OJ_Test = OJ[-train, ]
+
+```
+
+### Solucion enunciado del punto b
+Ajustar un árbol a los datos de entrenamiento, con Compra como respuesta
+y las otras variables como predictores. Utilice la función de resumen () para producir estadísticas resumidas sobre el árbol y describir el resultados obtenidos. ¿Cuál es la tasa de error de entrenamiento? Cuántos nodos terminales que tiene el árbol? 
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+Arbol_OJ = tree(Purchase ~ ., data = OJ_Train)
+summary(Arbol_OJ)
+
+```
+### Solucion enunciado del punto c
+Escriba el nombre del objeto de árbol para obtener una descripción detallada salida de texto. Elija uno de los nodos terminales e interprete el información mostrada.
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+Arbol_OJ
+
+```
+### Solucion enunciado del punto d
+Cree una gráfica del árbol e interprete los resultados.
+
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+plot(Arbol_OJ, type = "proportional")
+text(Arbol_OJ, splits = TRUE, pretty = 0, cex = 0.8, col = "springgreen4")
+
+```
+
+### Solucion enunciado del punto e
+Predecir la respuesta en los datos de prueba y producir una confusión matriz que compara las etiquetas de prueba con las etiquetas de prueba predichas. ¿Cuál es la tasa de error de la prueba?
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+Prediccion_OJ = predict(Arbol_OJ, OJ_Test, type = "class")
+confusionMatrix(Prediccion_OJ, OJ_Test$Purchase)
+
+```
+
+### Solucion enunciado del punto f
+Aplique la función cv.tree () al conjunto de entrenamiento para determinar el tamaño óptimo del árbol.
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+set.seed(356)
+CV_Arbol_OJ = cv.tree(Arbol_OJ, FUN = prune.misclass)
+
+```
+
+### Solucion enunciado del punto g
+Producir una parcela con el tamaño del árbol en el eje xy validación cruzada tasa de error de clasificación en el eje y.
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+plot(CV_Arbol_OJ$size, CV_Arbol_OJ$dev, xlab = "Numero de nodos terminales", 
+     ylab = "Error de clasificación", type = "b", pch = 19)
+
+```
+
+
+### Solucion enunciado del punto i
+Producir un árbol podado correspondiente al tamaño óptimo del árbol. Obtenido mediante validación cruzada. Si la validación cruzada no conduce a la selección de un árbol podado, luego cree un árbol podado con cinco
+nodos terminales.
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+Arbol_Podado_OJ = prune.tree(Arbol_OJ, best = 6)
+plot(Arbol_Podado_OJ, type = "proportional")
+text(Arbol_Podado_OJ, splits = TRUE, pretty = 0, cex = 0.8, col = "springgreen4")
+
+```
+
+### Solucion enunciado del punto j
+Compare las tasas de error de entrenamiento entre el arbol podado y el arbol no podado. Cual es mas alto?
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+summary(Arbol_OJ)
+summary(Arbol_Podado_OJ)
+
+```
+
+### Solucion enunciado del punto k
+Compare las tasas de error de prueba entre el arbol podado y el arbol no podado. Cual es mas alto?
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+Predicc_Arbol_OJ = predict(Arbol_OJ, newdata = OJ_Test, type = "class")
+Erroneos_Sinpodar = sum(OJ_Test$Purchase != Predicc_Arbol_OJ)
+round(Erroneos_Sinpodar/length(Predicc_Arbol_OJ),2)
+
+Prediccion_Arbol_Podado_OJ = predict(Arbol_Podado_OJ, newdata = OJ_Test, type = "class")
+Erroneos_Podado = sum(OJ_Test$Purchase != Prediccion_Arbol_Podado_OJ)
+round(Erroneos_Podado/length(Prediccion_Arbol_Podado_OJ),2)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

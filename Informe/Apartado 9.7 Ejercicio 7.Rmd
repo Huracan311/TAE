@@ -1,0 +1,260 @@
+---
+title: "Apartado 9.7 Ejercicio 7"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+Librerias a utilizar 
+```{r message=FALSE, warning=FALSE}
+library(ISLR)
+library(e1071)
+library(ggplot2)
+```
+
+## Ejercicio 7
+En este problema, utilizará enfoques de vectores de soporte para predecir si un automóvil determinado obtiene un consumo alto o bajo de combustible en función del conjunto de datos Auto.
+
+### Enunciado a:
+Cree una variable binaria que tome un 1 para los automóviles con rendimiento de gasolina por encima de la mediana y un 0 para automóviles con rendimiento de combustible por debajo de la mediana
+```{r message=FALSE, warning=FALSE}
+mediana = median(Auto$mpg)
+Nivel_Gason = ifelse(Auto$mpg > mediana, 1, 0)
+Auto$Nivel_Gason = as.factor(Nivel_Gason)
+
+```
+
+### Enunciado b:
+Ajuste un clasificador de vectores de soporte a los datos con varios valores de costo, para predecir si un automóvil obtiene un alto o bajo consumo de combustible. Informe los errores de validación cruzada asociados con diferentes valores de este parámetro. Comente sus resultados.
+
+```{r message=FALSE, warning=FALSE}
+set.seed(2000)
+Tuning_Lineal = tune(svm, Nivel_Gason ~ ., data = Auto, kernel = "linear", 
+              ranges = list(cost = c(0.001, 0.01,0.1, 1, 5, 10, 20, 30)),
+              scale = TRUE)
+
+summary(Tuning_Lineal)
+ggplot(data = Tuning_Lineal$performances, aes(x = cost, y = error)) +
+  geom_line(color= "#E30052") +
+  geom_point(color="#E30052") +
+  labs(title = "Error de clasificación vs parametro C") +
+  theme_bw()
+
+paste("EL MEJOR MODELO ESTÁ CONFIGURADO DE LA SIGUIENTE FORMA:")
+summary(Tuning_Lineal$Best_Modelo)
+```
+
+### Enunciado c:
+
+Ahora repita (b), esta vez usando SVM con núcleos de base radial y polinomial, con diferentes valores de gamma y grado y costo. Comente sus resultados.
+```{r message=FALSE, warning=FALSE}
+set.seed(500)
+Tuning_Poli = tune(svm, Nivel_Gason ~ ., data = Auto, kernel = "polynomial", 
+                    ranges = list(cost = c(0.1, 1, 5, 10, 15, 20),
+                    degree = c(2, 3, 4)),
+                    scale = TRUE)
+summary(Tuning_Poli)
+
+ggplot(data = Tuning_Poli$performances, aes(x = cost, y = error, col = as.factor(degree))) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Error de clasificación vs parametro c y grado polinomio") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_bw() + theme(legend.position = "bottom")
+
+paste("EL MEJOR MODELO ESTÁ CONFIGURADO DE LA SIGUIENTE FORMA:")
+summary(Tuning_Poli$Best_Modelo)
+
+set.seed(600)
+Tuning_Radial = tune(svm, Nivel_Gason ~ ., data = Auto, kernel = "radial", 
+                    ranges = list(cost = c(0.1, 1, 5, 10,20), 
+                    gamma = c(0.01, 0.1, 1, 5, 10, 20,50)))
+summary(Tuning_Radial)
+
+ggplot(data = Tuning_Radial$performances, aes(x = cost, y = error, color = factor(gamma))) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Error de Clasificación vs parametros C y gamma") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(legend.position = "bottom")
+
+paste("EL MEJOR MODELO ESTÁ CONFIGURADO DE LA SIGUIENTE FORMA:")
+summary(Tuning_Radial$Best_Modelo)
+
+```
+
+### Enunciado d:
+Haga algunas gráficas para respaldar sus afirmaciones en (b) y (c). Sugerencia: En el laboratorio, usamos la función plot () para objetos svm solo en casos con p = 2. Cuando p> 2, puede usar la función plot () para crear gráficos que muestren pares de variables a la vez. Esencialmente, en lugar de escribir
+> trama (svmfit, dat)
+
+donde svmfit contiene su modelo ajustado y dat es un marco de datos que contiene sus datos, puede escribir
+> trama (svmfit, dat, x1∼x4)
+
+para graficar solo la primera y cuarta variables. Sin embargo, tu debes reemplazar x1 y x4 con los nombres de variables correctos. Encontrar más, escriba? plot.svm.
+
+```{r message=FALSE, warning=FALSE}
+#mpg y displacement
+datos = Auto[,c("mpg", "displacement", "Nivel_Gason")]
+ggplot() +
+geom_point(data = datos, aes(x = mpg, y = displacement, color = Nivel_Gason), size = 3) +
+geom_point(data = datos[Tuning_Lineal$Best_Modelo$index, ],
+           aes(x = mpg, y = displacement, color = Nivel_Gason),
+           shape = 21, colour = "yellow",
+           size = 5) +
+theme(plot.title = element_text(hjust = 0.5)) +
+theme_bw() + theme(legend.position = "top") +
+theme(panel.background = element_rect(fill='gray8', colour='gray8'))
+
+#mpg y horsepower
+datos = Auto[,c("mpg", "horsepower", "Nivel_Gason")]
+ggplot() +
+geom_point(data = datos, aes(x = mpg, y = horsepower, color = Nivel_Gason), size = 3) +
+geom_point(data = datos[Tuning_Lineal$Best_Modelo$index, ],
+           aes(x = mpg, y = horsepower, color = Nivel_Gason),
+           shape = 21, colour = "yellow",
+           size = 5) +
+theme(plot.title = element_text(hjust = 0.5)) +
+theme_bw() + theme(legend.position = "top") +
+theme(panel.background = element_rect(fill='gray8', colour='gray8'))
+
+#mpg y year
+datos = Auto[,c("mpg", "year", "Nivel_Gason")]
+ggplot() +
+geom_point(data = datos, aes(x = mpg, y = year, color = Nivel_Gason), size = 3) +
+geom_point(data = datos[Tuning_Lineal$Best_Modelo$index, ],
+           aes(x = mpg, y = year, color = Nivel_Gason),
+           shape = 21, colour = "yellow",
+           size = 5) +
+theme(plot.title = element_text(hjust = 0.5)) +
+theme_bw() + theme(legend.position = "top") +
+theme(panel.background = element_rect(fill='gray8', colour='gray8'))
+
+#mpg y acceleration
+datos = Auto[,c("mpg", "acceleration", "Nivel_Gason")]
+ggplot() +
+geom_point(data = datos, aes(x = mpg, y = acceleration, color = Nivel_Gason), size = 3) +
+geom_point(data = datos[Tuning_Lineal$Best_Modelo$index, ],
+           aes(x = mpg, y = acceleration, color = Nivel_Gason),
+           shape = 21, colour = "yellow",
+           size = 5) +
+theme(plot.title = element_text(hjust = 0.5)) +
+theme_bw() + theme(legend.position = "top") +
+theme(panel.background = element_rect(fill='gray8', colour='gray8'))
+
+#mpg y displacement
+datos = Auto[,c("mpg", "displacement", "Nivel_Gason")]
+ggplot() +
+geom_point(data = datos, aes(x = mpg, y = displacement, color = Nivel_Gason), size = 3) +
+geom_point(data = datos[Tuning_Poli$Best_Modelo$index, ],
+           aes(x = mpg, y = displacement, color = Nivel_Gason),
+           shape = 21, colour = "yellow",
+           size = 3) +
+theme(plot.title = element_text(hjust = 0.5)) +
+theme_bw() + theme(legend.position = "top") +
+theme(panel.background = element_rect(fill='gray8', colour='gray8'))
+
+#mpg y horsepower
+datos = Auto[,c("mpg", "horsepower", "Nivel_Gason")]
+ggplot() +
+geom_point(data = datos, aes(x = mpg, y = horsepower, color = Nivel_Gason), size = 3) +
+geom_point(data = datos[Tuning_Poli$Best_Modelo$index, ],
+           aes(x = mpg, y = horsepower, color = Nivel_Gason),
+           shape = 21, colour = "yellow",
+           size = 3) +
+theme(plot.title = element_text(hjust = 0.5)) +
+theme_bw() + theme(legend.position = "top") +
+theme(panel.background = element_rect(fill='gray8', colour='gray8'))
+
+#mpg y year
+datos = Auto[,c("mpg", "year", "Nivel_Gason")]
+ggplot() +
+geom_point(data = datos, aes(x = mpg, y = year, color = Nivel_Gason), size = 3) +
+geom_point(data = datos[Tuning_Poli$Best_Modelo$index, ],
+           aes(x = mpg, y = year, color = Nivel_Gason),
+           shape = 21, colour = "yellow",
+           size = 3) +
+theme(plot.title = element_text(hjust = 0.5)) +
+theme_bw() + theme(legend.position = "top") +
+theme(panel.background = element_rect(fill='gray8', colour='gray8'))
+
+#mpg y acceleration
+datos = Auto[,c("mpg", "acceleration", "Nivel_Gason")]
+ggplot() +
+geom_point(data = datos, aes(x = mpg, y = acceleration, color = Nivel_Gason), size = 3) +
+geom_point(data = datos[Tuning_Poli$Best_Modelo$index, ],
+           aes(x = mpg, y = acceleration, color = Nivel_Gason),
+           shape = 21, colour = "yellow",
+           size = 3) +
+theme(plot.title = element_text(hjust = 0.5)) +
+theme_bw() + theme(legend.position = "top") +
+theme(panel.background = element_rect(fill='gray8', colour='gray8'))
+
+#mpg y displacement
+datos = Auto[,c("mpg", "displacement", "Nivel_Gason")]
+ggplot() +
+geom_point(data = datos, aes(x = mpg, y = displacement, color = Nivel_Gason), size = 3) +
+geom_point(data = datos[Tuning_Radial$Best_Modelo$index, ],
+           aes(x = mpg, y = displacement, color = Nivel_Gason),
+           shape = 21, colour = "yellow",
+           size = 4) +
+theme(plot.title = element_text(hjust = 0.5)) +
+theme_bw() + theme(legend.position = "top") +
+theme(panel.background = element_rect(fill='gray8', colour='gray8'))
+
+#mpg y horsepower
+datos = Auto[,c("mpg", "horsepower", "Nivel_Gason")]
+ggplot() +
+geom_point(data = datos, aes(x = mpg, y = horsepower, color = Nivel_Gason), size = 3) +
+geom_point(data = datos[Tuning_Radial$Best_Modelo$index, ],
+           aes(x = mpg, y = horsepower, color = Nivel_Gason),
+           shape = 21, colour = "yellow",
+           size = 4) +
+theme(plot.title = element_text(hjust = 0.5)) +
+theme_bw() + theme(legend.position = "top") +
+theme(panel.background = element_rect(fill='gray8', colour='gray8'))
+
+#mpg y year
+datos = Auto[,c("mpg", "year", "Nivel_Gason")]
+ggplot() +
+geom_point(data = datos, aes(x = mpg, y = year, color = Nivel_Gason), size = 3) +
+geom_point(data = datos[Tuning_Radial$Best_Modelo$index, ],
+           aes(x = mpg, y = year, color = Nivel_Gason),
+           shape = 21, colour = "yellow",
+           size = 4) +
+theme(plot.title = element_text(hjust = 0.5)) +
+theme_bw() + theme(legend.position = "top") +
+theme(panel.background = element_rect(fill='gray8', colour='gray8'))
+
+#mpg y acceleration
+datos = Auto[,c("mpg", "acceleration", "Nivel_Gason")]
+ggplot() +
+geom_point(data = datos, aes(x = mpg, y = acceleration, color = Nivel_Gason), size = 3) +
+geom_point(data = datos[Tuning_Radial$Best_Modelo$index, ],
+           aes(x = mpg, y = acceleration, color = Nivel_Gason),
+           shape = 21, colour = "yellow",
+           size = 4) +
+theme(plot.title = element_text(hjust = 0.5)) +
+theme_bw() + theme(legend.position = "top") +
+theme(panel.background = element_rect(fill='gray8', colour='gray8'))
+
+
+
+```
+

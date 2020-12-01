@@ -1,0 +1,275 @@
+<html>
+<head>
+<img src="Segundo trabajo - TAE-Parte superior.png">
+</head>
+<body>
+
+<center>
+
+<h2 style="text-align:justify">Apartado 4.7 ejercicios de clasificación </h2>
+
+<h3 style="text-align:justify">Ejercicio 10: conjunto de datos Weekly </h3>
+
+<img src="Segundo trabajo - TAE-Punto 10 general.png">
+
+<div class="button7" align="center"><a class="example_f" href="Punto10.html" target="_blank" rel="nofollow"><span>Pulse aqui para ver el analisis del ejercicio 10</a></div>
+
+
+<h3 style="text-align:justify">Ejercicio 11: conjunto de datos auto </h3>
+
+<img src="Segundo trabajo - TAE-Punto 11 general.png">
+
+
+<div class="button7" align="center"><a class="example_f" href="Punto11.html" target="_blank" rel="nofollow"><span>Pulse aqui para ver el analisis del ejercicio 11</a></div>
+
+<h3 style="text-align:justify">Ejercicio 12: Realizar funciones </h3>
+
+<img src="Ejercicio 12.png">
+
+
+<div class="button7" align="center"><a class="example_f" href="Apartado-4.7.2-Ejercicio-12.html" target="_blank" rel="nofollow"><span>Pulse aqui para visualizar el  ejercicio 12</a></div>
+
+<h3 style="text-align:justify">Ejercicio 13: conjunto de datos Boston  </h3>
+
+<img src="Segundo trabajo - TAE-Punto 13.png">
+
+
+<div class="button7" align="center"><a class="example_f" href="Apartado-4.7.2-Ejercicio-13.html" target="_blank" rel="nofollow"><span>Pulse aqui para ver el analisis del ejercicio 13</a></div>
+
+<h2 style="text-align:justify">Apartado 8.4 ejercicios de árboles de regresión </h2>
+
+<h3 style="text-align:justify">Ejercicio 7: conjunto de datos Boston </h3>
+
+<img src="Apartado8.4_Ejercicio7.png">
+
+<div class="button7" align="center"><a class="example_f" href="Apartado-8.4-Ejercicio-7.html" target="_blank" rel="nofollow"><span>Pulse aqui para ver el analisis del ejercicio 7</a></div>
+
+
+<h3 style="text-align:justify">Ejercicio 8:conjunto de datos Carseats </h3>
+
+<img src="Segundo trabajo - TAE-Ejercicio 8.4 enunciado 8.png">
+
+<div class="button7" align="center"><a class="example_f" href="Apartado-8.4-Ejercicio-8.html" target="_blank" rel="nofollow"><span>Pulse aqui para ver el analisis del ejercicio 8</a></div>
+
+<h3 style="text-align:justify">Ejercicio 9: Conjunto de datos OJ </h3>
+
+<img src="Segundo trabajo - TAE-Ejercicio 8.4 enunciado 9.png">
+
+<div class="button7" align="center"><a class="example_f" href="Apartado-8.4-Ejercicio-9.html" target="_blank" rel="nofollow"><span>Pulse aqui para ver el analisis del ejercicio 9</a></div>
+
+<h3 style="text-align:justify">Ejercicio 10: Conjunto de datos Hitters</h3>
+
+<img src="Segundo trabajo - TAE-Ejercicio 8.4 enunciado 10.png">
+
+<div class="button7" align="center"><a class="example_f" href="Apartado-8.4-Ejercicio-10.html" target="_blank" rel="nofollow"><span>Pulse aqui para ver el analisis del ejercicio 10</a></div>
+
+<h3 style="text-align:justify">Ejercicio 11: Conjunto de datos Caravan </h3>
+
+<img src="Segundo trabajo - TAE-Ejercicio 8.4 enunciado 11.png">
+
+<div class="button7" align="center"><a class="example_f" href="Apartado-8.4-Ejercicio-11.html" target="_blank" rel="nofollow"><span>Pulse aqui para ver el analisis del ejercicio 11</a></div>
+
+<h3 style="text-align:justify">Ejercicio 12: Conjunto de datos aleatorios </h3>
+
+<img src="Segundo trabajo - TAE-Ejercicio 8.4 enunciado 12.png">
+
+<div class="button7" align="center"><a class="example_f" href="Apartado-8.4-Ejercicio-7.html" target="_blank" rel="nofollow"><span>Pulse aqui para ver el analisis del ejercicio 12</a></div>
+
+<h2 style="text-align:justify">Apartado 9.7.2 ejercicios de maquinas de soporte vectorial </h2>
+
+<h3 style="text-align:justify">Ejercicio 4:  </h3>
+
+<img src="Segundo trabajo - TAE-Ejercicio 9.7- 4.png">
+
+<div class="button7" align="center"><a class="example_f" href="Apartado-9.7-Ejercicio-4.html" target="_blank" rel="nofollow"><span>Pulse aqui para ver el analisis del ejercicio 4</a></div>
+
+<h3 style="text-align:justify">Ejercicio 5:  </h3>
+
+<img src="Segundo trabajo - TAE-Ejercicio 9.7-5.png">
+
+<div class="button7" align="center"><a class="example_f" href="Apartado-9.7-Ejercicio-5.html" target="_blank" rel="nofollow"><span>Pulse aqui para ver el analisis del ejercicio 5</a></div>
+
+<h3 style="text-align:justify">Ejercicio 6:  </h3>
+
+<img src="Segundo trabajo - TAE-Ejercicio 9.7-6.png">
+
+<div class="button7" align="center"><a class="example_f" href="Apartado-9.7-Ejercicio-6.html" target="_blank" rel="nofollow"><span>Pulse aqui para ver el analisis del ejercicio 6</a></div>
+
+<h3 style="text-align:justify">Ejercicio 7:  </h3>
+
+<img src="Segundo trabajo - TAE-Ejercicio 9.7-7.png">
+
+<div class="button7" align="center"><a class="example_f" href="Apartado-9.7-Ejercicio-7.html" target="_blank" rel="nofollow"><span>Pulse aqui para ver el analisis del ejercicio 7</a></div>
+
+<h3 style="text-align:justify">Ejercicio 8:  </h3>
+
+<img src="Segundo trabajo - TAE-Ejercicio 9.7-8.png">
+
+<div class="button7" align="center"><a class="example_f" href="Apartado-9.7-Ejercicio-8.html" target="_blank" rel="nofollow"><span>Pulse aqui para ver el analisis del ejercicio 8</a></div>
+
+</body>
+</html>
+
+<html>
+<head>
+<style>
+
+.button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+.example_c {
+color: #494949 !important;
+text-transform: uppercase;
+text-decoration: none;
+background: #ffffff;
+padding: 20px;
+border: 4px solid #494949 !important;
+display: inline-block;
+transition: all 0.4s ease 0s;
+}
+
+.example_f {
+   border-radius: 4px;
+   background: linear-gradient(to right, #67b26b, #4ca2cb) !important;
+   border: none;
+   color: #FFFFFF;
+   text-align: center;
+   text-transform: uppercase;
+   font-size: 22px;
+   padding: 20px;
+   width: 200px;
+   transition: all 0.4s;
+   cursor: pointer;
+   margin: 5px;
+ }
+ .example_f span {
+   cursor: pointer;
+   display: inline-block;
+   position: relative;
+   transition: 0.4s;
+ }
+ .example_f span:after {
+   content: '\00bb';
+   position: absolute;
+   opacity: 0;
+   top: 0;
+   right: -20px;
+   transition: 0.5s;
+ }
+ .example_f:hover span {
+   padding-right: 25px;
+ }
+ .example_f:hover span:after {
+   opacity: 1;
+   right: 0;
+ }
+
+ @import url('https://fonts.googleapis.com/css?family=Rubik:500');
+
+* {
+  padding:0;
+  margin:0;
+}
+
+body {
+  font-family: 'Rubik', sans-serif;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
+  justify-content: center;
+  min-height:100vh;
+  background: #CCD1D9;
+}
+
+.button7 {
+  padding: 16px 42px;
+  box-shadow: 0px 0px 12px -2px rgba(0,0,0,0.5);
+  line-height: 1.25;
+  background: #FFFFFF;
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  position: relative;
+  transition: background-color .6s ease;
+  overflow: hidden;
+  &:after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    top: 50%;
+    left: 50%;
+    transform-style: flat;
+    transform: translate3d(-50%,-50%,0);
+    background: rgba(white,.1);
+    border-radius: 100%;
+    transition: width .3s ease, height .3s ease;
+  }
+  &:focus,
+  &:hover {
+      background: darken(#FC6E51,7%);
+  }
+  &:active {
+    &:after {
+      width: 200px;
+      height: 200px;
+    }
+  }
+}
+
+.push_button {
+  position: relative;
+  width:220px;
+  height:40px;
+  text-align:center;
+  color:#FFF;
+  text-decoration:none;
+  line-height:43px;
+  font-family:'Oswald', Helvetica;
+  display: block;
+  margin: 30px;
+}
+
+.btn-group button {
+  background-color: white; /* Green background */
+  border: 1px solid black; /* Green border */
+  color: black; /* White text */
+  padding: 10px 24px; /* Some padding */
+  cursor: pointer; /* Pointer/hand icon */
+  float: left; /* Float the buttons side by side */
+}
+
+.btn-group button:not(:last-child) {
+  border-right: none; /* Prevent double borders */
+}
+
+/* Clear floats (clearfix hack) */
+.btn-group:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+/* Add a background color on hover */
+.btn-group button:hover {
+  background-color: #86F9E7;
+}
+
+</style>
+</head>
+<body>
+
+</body>
+</html>

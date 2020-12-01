@@ -1,0 +1,68 @@
+---
+title: "Apartado 8.4 Ejercicio 7"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+date: "29/11/2020"
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+## Solución del ejercicio
+
+En el laboratorio, aplicamos bosques aleatorios a los datos de Boston usando mtry = 6 y usando ntree = 25 y ntree = 500. Cree un gráfico que muestre el error de prueba resultante de bosques aleatorios en este conjunto de datos para obtener un rango más completo de valores para mtry y ntree. Puede modelar su diagrama según la Figura 8.10. Describe los resultados obtenidos.
+
+```{r}
+library(MASS)
+library(randomForest)
+#Crear los subconjuntos de entreno y de prueba
+P = ncol(Boston) - 1
+P_2 = trunc(P/2)
+P_3 = trunc(P/3)
+P_Raiz = trunc(sqrt(P))
+
+set.seed(100)
+Train = sample(nrow(Boston), nrow(Boston)/2)
+X_Train = Boston[Train, -14]
+X_Test = Boston[-Train, -14]
+Y_Train = Boston[Train, 14]
+Y_Test = Boston[-Train, 14]
+
+Random_Forest_P = randomForest(X_Train, Y_Train, xtest = X_Test, ytest = Y_Test, 
+    mtry = P, ntree = 500)
+
+Random_Forest_P2 = randomForest(X_Train, Y_Train, xtest = X_Test, ytest = Y_Test, 
+    mtry = P_2, ntree = 500)
+
+Random_Forest_P3 = randomForest(X_Train, Y_Train, xtest = X_Test, ytest = Y_Test, 
+    mtry = P_3, ntree = 500)
+
+Random_Forest_Praiz = randomForest(X_Train, Y_Train, xtest = X_Test, ytest = Y_Test, 
+    mtry = P_Raiz, ntree = 500)
+
+plot(1:500, Random_Forest_P$test$mse, col = "#E30052", type = "l", xlab = "NÚMERO DE ARBOLES", 
+    ylab = "MSE DE PRUEBA", ylim = c(10, 18))
+lines(1:500, Random_Forest_P2$test$mse, col = "#9FD5D1", type = "l")
+lines(1:500, Random_Forest_P3$test$mse, col = "#FF8000", type = "l")
+lines(1:500, Random_Forest_Praiz$test$mse, col = "#00BB2B", type = "l")
+
+legend("bottomright", c("m=p", "m=p/2", "m=p/3", "m=raiz(p)"), col = c("#E30052","#9FD5D1","#FF8000","#00BB2B"),cex = 1, lty = 1)
+
+```
+
+
+
+

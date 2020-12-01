@@ -1,0 +1,119 @@
+---
+title: "Apartado 9.7 Ejercicio 4"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+Librerias a utilizar 
+```{r message=FALSE, warning=FALSE}
+library(e1071)
+
+```
+
+## Ejercicio 4
+Genere un conjunto de datos simulado de dos clases con 100 observaciones y dos entidades en las que haya una separación visible pero no lineal entre las dos clases. Muestre que en esta configuración, una máquina de vectores de soporte con un núcleo polinomial (con un grado mayor que 1) o un núcleo radial superará a un clasificador de vectores de soporte en los datos de entrenamiento. ¿Qué técnica funciona mejor con los datos de prueba? Realice gráficos e informes de capacitación y tasas de error de prueba para respaldar sus afirmaciones.
+
+```{r message=FALSE, warning=FALSE}
+#Se crean los datos X y Y aleatorios
+set.seed(200)
+x = rnorm(100)
+y = (-x^2)*4* + 2 + rnorm(100)
+#60% serán de la clase +1 y 40% de la clase -1
+clasepos = sample(100, 60)
+y[clasepos] = y[clasepos] +4
+y[-clasepos] = y[-clasepos] -1
+z = rep(-1, 100)
+z[clasepos] = 1
+
+plot(y[clasepos],x[clasepos], pch="x", lwd=4, col="#FF8000", xlim=c(-15, 10), xlab="Y", ylab="X")
+points(y[-clasepos], x[-clasepos], pch="o", lwd=4, col="#9FD5D1")
+
+
+#Se crean las variables respuestas -1 y +1
+set.seed(300)
+datos = data.frame(x,y,z = as.factor(z))
+#70% de los datos se usarán para entreno y 30% para prueba
+train = sample(100, 70)
+Datos_Train = datos[train,]
+Datos_Test = datos[-train,]
+
+#verifivar distribucion de las clases en los datos de entreno y de prueba
+table(Datos_Train[,3])
+table(Datos_Test[,3])
+
+prop.table(table(Datos_Train[,3]))
+prop.table(table(Datos_Test[,3]))
+
+# Kernel lineal:
+svm.linear = svm(z~., data=Datos_Train, kernel="linear", cost=10)
+plot(svm.linear, Datos_Train,col=c("#FF8000","#9FD5D1"))
+
+prediccion = predict(svm.linear, Datos_Train)
+table(prediccion , real = Datos_Train$z)
+Train_Error = round(mean(prediccion != Datos_Train$z)*100,3)
+
+paste("Para un Kernel Lineal el error de entrenamiento es de: ", Train_Error, "%")
+
+set.seed(500)
+SVM_Poly = svm(z~., data=Datos_Train, kernel="polynomial", cost=10, degree=11)
+plot(SVM_Poly, Datos_Train,col=c("#FF8000","#9FD5D1"))
+
+prediccion = predict(SVM_Poly, Datos_Train)
+table(prediccion , real = Datos_Train$z)
+Train_Error = round(mean(prediccion != Datos_Train$z)*100,3)
+
+paste("Para un Kernel Polinomial de grado 11 el error de entrenamiento es de: ", Train_Error, "%")
+
+set.seed(600)
+SVM_Radial = svm(z~., data=Datos_Train, kernel="radial", gamma=1, cost=10)
+plot(SVM_Radial, Datos_Train,col=c("#FF8000","#9FD5D1"))
+
+prediccion = predict(SVM_Radial, Datos_Train)
+table(prediccion , real = Datos_Train$z)
+Train_Error = round(mean(prediccion != Datos_Train$z)*100,3)
+
+paste("Para un Kernel Radial el error de entrenamiento es de: ", Train_Error, "%")
+
+plot(svm.linear, Datos_Test,col=c("#FF8000","#9FD5D1"))
+
+prediccion = predict(svm.linear, Datos_Test)
+table(prediccion , real = Datos_Test$z)
+Test_Error = round(mean(prediccion != Datos_Test$z)*100,3)
+
+paste("Para un Kernel Lineal el error de validación es de: ", Test_Error, "%")
+
+plot(SVM_Poly, Datos_Test,col=c("#FF8000","#9FD5D1"))
+
+prediccion = predict(SVM_Poly, Datos_Test)
+table(prediccion , real = Datos_Test$z)
+Test_Error = round(mean(prediccion != Datos_Test$z)*100,3)
+
+paste("Para un Kernel Polinomial el error de validación es de: ", Test_Error, "%")
+
+plot(SVM_Radial, Datos_Test,col=c("#FF8000","#9FD5D1"))
+
+prediccion = predict(SVM_Radial, Datos_Test)
+table(prediccion , real = Datos_Test$z)
+Test_Error = round(mean(prediccion != Datos_Test$z)*100,3)
+
+paste("Para un Kernel Radial el error de validación es de: ", Test_Error, "%")
+
+```
+

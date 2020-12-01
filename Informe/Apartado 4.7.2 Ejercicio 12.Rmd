@@ -1,0 +1,103 @@
+---
+title: "Apartado 4.7.2 Ejercicio 12"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+date: "29/11/2020"
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+
+## Ejercicio 12
+
+Este problema involucra funciones de escritura.
+
+### Solucion enunciado del punto a
+
+Escriba una función, Potencia (), que imprima el resultado de elevar 2 a la 3ª potencia. En otras palabras, su función debe calcular 2^33 e imprimir los resultados. Sugerencia: recuerde que (x^a) eleva x a la potencia a. Utilice la función print () para generar el resultado.a tanto mpg01 como las otras variables automáticas.
+ 
+```{r, warning=FALSE, message=FALSE}
+Potencia = function() 
+{
+  2^3
+}
+print(Potencia())
+
+```
+
+### Solucion enunciado del punto b
+
+Cree una nueva función, Potencia2(), que le permita pasar cualquier dos números, x y a, e imprime el valor de (x^a). Puede hacer esto comenzando su función con la línea Potencia2 = function(x, a) {Debería poder llamar a su función ingresando, por ejemplo, Potencia2 (3,8) en la línea de comando. Esto debería generar el valor de 38, es decir, 6, 561. 
+
+```{r}
+Potencia2 = function(x, a)
+{
+  x^a
+}
+Potencia2(3, 3)
+
+```
+### Solucion enunciado del punto c
+
+Con la función Potencia2() que acaba de escribir, calcule 10^3, 8^17 y 131^3.
+
+```{r}
+#Calculo de 10^3
+Potencia2(10, 3)
+
+#Calculo de 8^17
+Potencia2(8, 17)
+
+#Calculo de 131^3
+Potencia2(131, 3)
+
+```
+### Solucion enunciado del punto d
+
+Ahora cree una nueva función,Potencia3 (), que realmente devuelva el resultado x ^ a como un objeto R, en lugar de simplemente imprimirlo en la pantalla. Es decir, si almacena el valor (x^a) en un objeto llamado resultado dentro de su función, entonces simplemente puede devolver () este retorno () resultado, usando la siguiente línea: La línea de arriba debe ser la última línea de su función, antes del símbolo}.
+
+```{r}
+Potencia3 = function(x, a) {
+    result = x^a
+    return(result)
+}
+
+```
+
+
+### Solucion enunciado del punto e
+
+Ahora, usando la función Potencia3 (), cree una gráfica de f (x) = x2. El eje x debe mostrar un rango de números enteros del 1 al 10, y el eje y debe mostrar x2. Rotule los ejes apropiadamente y use un título apropiado para la figura. Considere mostrar el eje x, el eje y o ambos en la escala logarítmica. Puede hacer esto usando log = ‘‘ x ’’, log = ‘‘ y ’’ o log = ‘‘ xy ’’ como argumentos para la función plot ().?
+
+```{r}
+x = 1:10
+plot(x, Potencia3(x, 2), log = "xy", ylab = "Logaritmo de y = x^2", xlab = "Logaritmo de x", 
+    main = "Logaritmo de x versus Logaritmo de x^2",pch=19,col=2)
+
+```
+
+### Solucion enunciado del punto f
+
+Cree una función, PlotPotencia(), que le permita crear una gráfica de x contra x ^ a para una a fija y para un rango de valores de x. Por ejemplo, si llamas PlotPotencia (1:10, 3) entonces se debe crear una gráfica con un eje x tomando valores 1, 2,. . . , 10, y un eje y que toma los valores 1^33, 2^3,. . . , 10^3.
+
+```{r}
+PlotPotencia = function(x, a) {
+    plot(x, Potencia3(x, a), ylab = "X^a", main = "Logaritmo de x versus Logaritmo de x^a",pch=19,col=2)
+}
+PlotPotencia(1:10, 3)
+```
+

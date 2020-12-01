@@ -1,0 +1,136 @@
+---
+title: "Apartado 9.7 Ejercicio 6"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+Librerias a utilizar 
+```{r message=FALSE, warning=FALSE}
+library(e1071)
+library(ggplot2)
+library(dplyr)
+```
+
+## Ejercicio 6
+
+Al final de la Sección 9.6.1, se afirma que en el caso de datos que son apenas separables linealmente, un clasificador de vectores de soporte con un valor pequeño de costo que clasifica erróneamente un par de observaciones de entrenamiento puede funcionar mejor en los datos de prueba. que uno con un valor de costo enorme que no clasifique erróneamente ninguna observación de entrenamiento. Ahora investigará este reclamo.
+
+### Enunciado a:
+Genere datos de dos clases con p = 2 de tal manera que las clases sean apenas separables linealmente.
+
+```{r message=FALSE, warning=FALSE}
+set.seed(2520)
+
+X_Pos = runif(450, 0, 90)
+Y_Pos = runif(450, X_Pos + 10, 100)
+X_Pos_Ruido = runif(50, 20, 80)
+Y_Pos_Ruido = 5/4 * (X_Pos_Ruido - 10) + 0.1
+
+X_Neg = runif(450, 10, 100)
+Y_Neg = runif(450, 0, X_Neg - 10)
+X_Neg_Ruido = runif(50, 20, 80)
+Y_Neg_Ruido = 5/4 * (X_Neg_Ruido - 10) - 0.1
+
+x = c(X_Pos, X_Pos_Ruido, X_Neg, X_Neg_Ruido)
+y = c(Y_Pos, Y_Pos_Ruido, Y_Neg, Y_Neg_Ruido)
+
+positivos = seq(1, 500)
+z = rep(-1, 1000)
+z[positivos] = 1
+
+datos = data.frame(X = x, Y = y, z = as.factor(z))
+
+ggplot(data = datos, aes(x = X, y = Y, color = as.factor(z))) +
+  geom_point(size = 2) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+```
+
+### Enunciado b:
+Calcule las tasas de error de validación cruzada para clasificadores de vectores de soporte con un rango de valores de costo. ¿Cuántos errores de capacitación se clasifican erróneamente para cada valor de costo considerado y cómo se relaciona esto con los errores de validación cruzada obtenidos?
+
+```{r message=FALSE, warning=FALSE}
+set.seed(325)
+Model_Tuning <- tune(svm, z ~ ., data = datos, 
+               kernel = "linear", 
+               ranges = list(cost = c(0.01, 0.1, 1, 5, 10, 50, 100, 500, 1000,5000)))
+
+summary(Model_Tuning)
+ggplot(data = Model_Tuning$performances, aes(x = cost, y = error)) +
+  geom_line(color= "#E30052") +
+  geom_point(color="#E30052") +
+  labs(title = "Error de clasificación vs hiperparámetro C") +
+  theme_bw()
+paste("El mejor modelo es el siguiente:")
+Model_Tuning$Best_Model
+```
+
+
+### Enunciado c:
+
+Genere un conjunto de datos de prueba apropiado y calcule los errores de prueba correspondientes a cada uno de los valores de costo considerados. ¿Qué valor de costo conduce a la menor cantidad de errores de prueba, y cómo se compara esto con los valores de costo que producen la menor cantidad de errores de entrenamiento y la menor cantidad de errores de validación cruzada?
+
+```{r message=FALSE, warning=FALSE}
+
+set.seed(2321)
+X_Test = runif(1000, 0, 100)
+positivos = sample(1000, 500)
+Y_Test = rep(NA, 1000)
+for (i in positivos) {
+    Y_Test[i] = runif(1, X_Test[i], 100)
+}
+for (i in setdiff(1:1000, positivos)) {
+    Y_Test[i] = runif(1, 0, X_Test[i])
+}
+
+Z_Test = rep(-1, 1000)
+Z_Test[positivos] = 1
+Datos_Test = data.frame(X = X_Test, Y = Y_Test, z = as.factor(Z_Test))
+
+ggplot(data = Datos_Test, aes(x = X_Test, y = Y_Test, color = as.factor(Z_Test))) +
+  geom_point(size = 2) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+costos = c(0.01, 0.1, 1, 5, 10, 50, 100, 500,1000)
+Mal_Clasificadas = rep(NA, length(costos))
+Errores_Test = rep(NA, length(costos))
+for (i in 1:length(costos)) {
+    SVM_Fit = svm(z ~ ., data = datos, kernel = "linear", cost = costos[i])
+    SVM_Predict = predict(SVM_Fit, Datos_Test)
+    Mal_Clasificadas[i] = sum(SVM_Predict !=Datos_Test$z)
+    Errores_Test[i] = mean(SVM_Predict != Datos_Test$z)*100
+}
+resultado = data.frame(costo = costos, mal_clasificadas = Mal_Clasificadas, porcentaje_error = Errores_Test)
+
+ggplot(data = resultado, aes(x = costo, y = Mal_Clasificadas)) +
+  geom_line(color= "#E30052") +
+  geom_point(color="#E30052") +
+  labs(title = "Error de clasificación vs Costo") +
+  theme_bw()
+
+resultado
+
+
+```
+
+
+

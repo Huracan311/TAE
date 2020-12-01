@@ -1,0 +1,201 @@
+---
+title: "Apartado 8.4 Ejercicio 8"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+Librerias a utilizar 
+```{r, warning=FALSE, message=FALSE}
+library(ISLR)
+library(tree)
+library(ggplot2)
+library(ggpubr)
+library(randomForest)
+library(tidyverse)
+```
+
+## Ejercicio 8
+
+En el laboratorio, se aplicó un árbol de clasificación al conjunto de datos de Asientos para automóvil después de convertir Ventas en una variable de respuesta cualitativa. Ahora buscaremos predecir las ventas utilizando árboles de regresión y enfoques relacionados, tratando la respuesta como una variable cuantitativa.
+
+### Solucion enunciado del punto a
+
+Divida el conjunto de datos en un conjunto de entrenamiento y un conjunto de prueba.
+
+```{r, warning=FALSE, message=FALSE}
+attach(Carseats)
+set.seed(100)
+train = sample(nrow(Carseats), nrow(Carseats)/2)
+Carseats_Train = Carseats[train, ]
+Carseats_Test = Carseats[-train, ]
+
+```
+
+### Solucion enunciado del punto b
+
+Ajuste un árbol de regresión al conjunto de entrenamiento. Trace el árbol e interprete los resultados. ¿Qué prueba MSE obtiene?
+
+```{r}
+Tree_Carseats = tree(Sales ~ ., data = Carseats_Train,  split = "deviance")
+#summary(Tree_Carseats)
+
+plot(x = Tree_Carseats, type = "proportional")
+text(x = Tree_Carseats, splits = TRUE, pretty = 0,cex = 0.6, col = "forestgreen")
+
+Carseats_Predict = predict(Tree_Carseats, newdata = Carseats_Test)
+mean((Carseats_Predict - Carseats_Test$Sales)^2)
+```
+### Solucion enunciado del punto c
+
+Utilice la validación cruzada para determinar el nivel óptimo de complejidad del árbol. ¿La poda del árbol mejora el MSE de prueba?
+
+```{r}
+
+Validacion_Cruzada_Carsears = cv.tree(Tree_Carseats, FUN = prune.tree)
+
+Resultados_Validacion_Cruzada = data.frame(Nro_Nodos = Validacion_Cruzada_Carsears$size, desviacion = Validacion_Cruzada_Carsears$dev,
+                            k = Validacion_Cruzada_Carsears$k)
+
+P1 = ggplot(data = Resultados_Validacion_Cruzada, aes(x = Nro_Nodos, y = desviacion)) +
+      geom_line() + geom_point() + labs(title = "Error vs tamaño del árbol") + theme_bw() 
+
+P2 = ggplot(data = Resultados_Validacion_Cruzada, aes(x = k, y = desviacion)) +
+      geom_line() + geom_point() + labs(title = "Error vs parametro K") + theme_bw() 
+
+ggarrange(P1, P2)
+
+Carseats_Pruning = prune.tree(Tree_Carseats, best = 8)
+plot(x = Carseats_Pruning, type = "proportional")
+text(x = Carseats_Pruning, splits = TRUE, pretty = 0, cex = 0.8, col = "forestgreen")
+
+Carseats_Pruning.predict = predict(Carseats_Pruning, Carseats_Test)
+round(mean((Carseats_Test$Sales - Carseats_Pruning.predict)^2),2)
+
+```
+### Solucion enunciado del punto d
+
+Utilice el método de ensacado para analizar estos datos. Qué prueba MSE obtienes? Utilice la función de importancia () para determinar qué variables son más importantes.
+
+```{r}
+Carseats_Bagg = randomForest(Sales ~ ., data = Carseats_Train, mtry = 10, ntree = 500,importance = T)
+Prediccion = predict(Carseats_Bagg, newdata = Carseats_Test)
+Error = round(mean((Carseats_Test$Sales - Prediccion)^2),2)
+paste("el Error de test (mse) del modelo obtenido por bagging es:", Error)
+
+Importancia_Pred <- as.data.frame(importance(Carseats_Bagg, scale = TRUE))
+Importancia_Pred <- rownames_to_column(Importancia_Pred, var = "variable")
+
+
+p1 <- ggplot(data = Importancia_Pred, aes(x = reorder(variable, `%IncMSE`), y = `%IncMSE`, fill = `%IncMSE`)) +
+    labs(x = "variable", title = "Reducción de MSE") +
+    geom_col() +
+    coord_flip() +
+    theme_bw() +
+    theme(legend.position = "bottom")
+
+p2 <- ggplot(data = Importancia_Pred, aes(x = reorder(variable, IncNodePurity), y = IncNodePurity,
+                                          fill = IncNodePurity)) +
+    labs(x = "variable", title = "Reducción de pureza") +
+    geom_col() +
+    coord_flip() +
+    theme_bw() +
+    theme(legend.position = "bottom")
+ggarrange(p1, p2)
+
+
+```
+
+
+### Solucion enunciado del punto e
+
+Utilice bosques aleatorios para analizar estos datos. ¿Qué prueba MSE haces?
+¿obtener? Utilice la función de importancia () para determinar qué variables son más importantes. Describa el efecto de m, el número de variables consideradas en cada división, sobre la tasa de Error obtenida.
+
+```{r}
+#Random Forest variando los predictores
+Max_Predictores = ncol(Carseats)-1
+Nro_Predictores = rep(NA, Max_Predictores)
+Test_Error =  rep(NA, Max_Predictores)
+
+for(i in 1:10){
+  carseats.rf = randomForest(Sales ~ ., data = Carseats_Train, mtry = i, ntree = 500, importance = T)
+  Prediccion = predict(carseats.rf, Carseats_Test)
+  Nro_Predictores[i] = i
+  Test_Error[i] = round(mean((Carseats_Test$Sales - Prediccion)^2),2)
+  #Error = round(mean((Carseats_Test$Sales - Prediccion)^2),2)
+  #mensaje = paste("Error de prueba con ", i, " predictores = ", Error)
+  #print(mensaje)
+}
+
+Result_Modelos = data.frame(Nro_Predictores, Test_Error)
+
+ggplot(data = Result_Modelos, aes(x = Nro_Predictores, y = Test_Error)) +
+  scale_x_continuous(breaks = Result_Modelos$Nro_Predictores) +
+  geom_line() + geom_point() + 
+  geom_point(data = Result_Modelos %>% arrange(Test_Error) %>% head(1), color = "red") +
+  labs(title = "Evolución del Error de predicion de prueba vs mtry",x = "nº predictores empleados", y = "Error de prueba")+   theme_bw()
+
+Carseats_R6 = randomForest(Sales ~ ., data = Carseats_Train, mtry = 6, ntree = 500, importance = T)
+Prediccion = predict(Carseats_R6, Carseats_Test)
+Error = round(mean((Carseats_Test$Sales - Prediccion)^2),2)
+paste("Error de prueba con 6 predictores = ", Error)
+
+Importancia_Pred <- as.data.frame(importance(Carseats_R6, scale = TRUE))
+Importancia_Pred <- rownames_to_column(Importancia_Pred, var = "variable")
+
+p1 <- ggplot(data = Importancia_Pred, aes(x = reorder(variable, `%IncMSE`), y = `%IncMSE`, fill = `%IncMSE`)) +
+    labs(x = "variable", title = "Reducción de MSE") +
+    geom_col() +
+    coord_flip() +
+    theme_bw() +
+    theme(legend.position = "bottom")
+
+p2 <- ggplot(data = Importancia_Pred, aes(x = reorder(variable, IncNodePurity), y = IncNodePurity,
+                                          fill = IncNodePurity)) +
+    labs(x = "variable", title = "Reducción de pureza") +
+    geom_col() +
+    coord_flip() +
+    theme_bw() +
+    theme(legend.position = "bottom")
+ggarrange(p1, p2)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

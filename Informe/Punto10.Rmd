@@ -1,0 +1,235 @@
+<html>
+<head>
+<img src="Segundo trabajo - TAE-Parte superior.png">
+</head>
+<body>
+
+<center>
+
+<h2 style="text-align:justify">Ejercicio 10 </h2>
+
+<br></br>
+
+<h4 style="text-align:justify">
+Estas preguntas debe responderse utilizando el conjunto de datos Weekly, que es parte del paquete ISLR. Estos datos son de naturaleza similar a los datos de Smarket del laboratorio de este capítulo, excepto que contienen 1.089 retornos semanales durante 21 años, desde principios de 1990 hasta finales de 2010.
+</h4>
+
+<h4 style="text-align:justify">
+PUNTO A: Produzca algunos resúmenes numéricos y gráficos de los datos semanales. ¿Parece haber algún patrón?
+</h4>
+
+<br></br>
+
+<img src="Segundo trabajo - TAE-Punto 10 a.png">
+
+<br></br>
+
+<h4 style="text-align:justify">
+PUNTO B: Utilice el conjunto de datos completo para realizar una regresión logística con Dirección como respuesta y las cinco variables de retardo más Volumen como predictores. Utilice la función de resumen para imprimir los resultados. ¿Alguno de los predictores parece ser estadísticamente significativo? Si es así,¿cuáles?
+</h4>
+
+<br></br>
+
+<img src="Segundo trabajo - TAE-Punto 10 b.png">
+
+<br></br>
+
+<h4 style="text-align:justify">
+PUNTO C: Calcule la matriz de confusión y la fracción general de predicciones correctas. Explique lo que le dice la matriz de confusión sobre los tipos de errores cometidos por la regresión logística.
+</h4>
+
+<br></br>
+
+<img src="Segundo trabajo - TAE-Punto 10 c.png">
+
+<br></br>
+
+<h4 style="text-align:justify">
+PUNTO D, E, F, G Y H: Ahora ajuste el modelo de regresión logística usando un período de datos de entrenamiento de 1990 a 2008, con Lag2 como único predictor. Calcule la matriz de confusión y la fracción general de predicciones correctas para los datos retenidos (es decir, los datos de 2009 y 2010). Repita  de nuevo el procedimiento propuesto pero usando LDA, QDA Y KNN con K=1. ¿Cuál de estos métodos parece proporcionar los mejores resultados con estos datos?  
+</h4>
+
+<br></br>
+
+<img src="Segundo trabajo - TAE-Punto 10 d,e,f,g,h.png">
+
+<br></br>
+
+<h4 style="text-align:justify">
+PUNTO I: Experimente con diferentes combinaciones de predictores, incluidas las posibles transformaciones e interacciones, para cada uno de los métodos. Informe las variables, el método y la matriz de confusión asociada que parece proporcionar los mejores resultados sobre los datos retenidos. Tenga en cuenta que también debe experimentar con los valores de K en el clasificador KNN.
+</h4>
+
+<br></br>
+
+<img src="Segundo trabajo - TAE-Punto 10 i.png">
+
+<br></br>
+
+<div class="button7" align="center"><a class="example_f" href="Apartado-4.7.2-Ejercicio-10.html" target="_blank" rel="nofollow"><span>Para visualizar el procedimiento pulse aqui</a></div>
+
+
+</body>
+</html>
+
+<html>
+<head>
+<style>
+
+.button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+.example_c {
+color: #494949 !important;
+text-transform: uppercase;
+text-decoration: none;
+background: #ffffff;
+padding: 20px;
+border: 4px solid #494949 !important;
+display: inline-block;
+transition: all 0.4s ease 0s;
+}
+
+.example_f {
+   border-radius: 4px;
+   background: linear-gradient(to right, #67b26b, #4ca2cb) !important;
+   border: none;
+   color: #FFFFFF;
+   text-align: center;
+   text-transform: uppercase;
+   font-size: 22px;
+   padding: 20px;
+   width: 200px;
+   transition: all 0.4s;
+   cursor: pointer;
+   margin: 5px;
+ }
+ .example_f span {
+   cursor: pointer;
+   display: inline-block;
+   position: relative;
+   transition: 0.4s;
+ }
+ .example_f span:after {
+   content: '\00bb';
+   position: absolute;
+   opacity: 0;
+   top: 0;
+   right: -20px;
+   transition: 0.5s;
+ }
+ .example_f:hover span {
+   padding-right: 25px;
+ }
+ .example_f:hover span:after {
+   opacity: 1;
+   right: 0;
+ }
+
+ @import url('https://fonts.googleapis.com/css?family=Rubik:500');
+
+* {
+  padding:0;
+  margin:0;
+}
+
+body {
+  font-family: 'Rubik', sans-serif;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
+  justify-content: center;
+  min-height:100vh;
+  background: #CCD1D9;
+}
+
+.button7 {
+  padding: 16px 42px;
+  box-shadow: 0px 0px 12px -2px rgba(0,0,0,0.5);
+  line-height: 1.25;
+  background: #FFFFFF;
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  position: relative;
+  transition: background-color .6s ease;
+  overflow: hidden;
+  &:after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    top: 50%;
+    left: 50%;
+    transform-style: flat;
+    transform: translate3d(-50%,-50%,0);
+    background: rgba(white,.1);
+    border-radius: 100%;
+    transition: width .3s ease, height .3s ease;
+  }
+  &:focus,
+  &:hover {
+      background: darken(#FC6E51,7%);
+  }
+  &:active {
+    &:after {
+      width: 200px;
+      height: 200px;
+    }
+  }
+}
+
+.push_button {
+  position: relative;
+  width:220px;
+  height:40px;
+  text-align:center;
+  color:#FFF;
+  text-decoration:none;
+  line-height:43px;
+  font-family:'Oswald', Helvetica;
+  display: block;
+  margin: 30px;
+}
+
+.btn-group button {
+  background-color: white; /* Green background */
+  border: 1px solid black; /* Green border */
+  color: black; /* White text */
+  padding: 10px 24px; /* Some padding */
+  cursor: pointer; /* Pointer/hand icon */
+  float: left; /* Float the buttons side by side */
+}
+
+.btn-group button:not(:last-child) {
+  border-right: none; /* Prevent double borders */
+}
+
+/* Clear floats (clearfix hack) */
+.btn-group:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+/* Add a background color on hover */
+.btn-group button:hover {
+  background-color: #86F9E7;
+}
+
+</style>
+</head>
+<body>
+
+</body>
+</html>

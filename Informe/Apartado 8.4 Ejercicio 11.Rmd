@@ -1,0 +1,93 @@
+---
+title: "Apartado8.4 Ejercicio 11"
+author: 
+- "Daniel Ceballos Monsalve"
+- "Andrés Felipe Mejía Quintero"
+- "Doris Steffania Obando Gonzalez"
+
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    theme: united
+    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+Librerias a utilizar 
+```{r message=FALSE, warning=FALSE}
+library(ISLR)
+library(gbm)
+library(class)
+```
+
+## Ejercicio 11
+Esta pregunta utiliza el conjunto de datos de Caravan.
+
+### Solucion enunciado del punto a
+Cree un conjunto de entrenamiento que consta de las primeras 1000 observaciones y un conjunto de prueba que consta de las observaciones restantes.
+
+```{r message=FALSE, warning=FALSE}
+train = 1:1000
+Caravan$Purchase = ifelse(Caravan$Purchase == "Yes", 1, 0)
+Caravan_Train = Caravan[train, ]
+Caravan_Test = Caravan[-train, ]
+
+```
+
+### Solucion enunciado del punto b
+Ajuste un modelo de impulso al conjunto de entrenamiento con Compra como respuesta y las otras variables como predictores. Utilice 1000 árboles y un valor de contracción de 0,01. ¿Qué predictores parecen ser los más importantes?
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+set.seed(400)
+Boost_Caravan = gbm(Purchase ~ ., data = Caravan_Train, n.trees = 1000, shrinkage = 0.01, 
+                    distribution = "bernoulli")
+
+summary(Boost_Caravan)
+
+```
+
+### Solucion enunciado del punto c
+Utilice el modelo de refuerzo para predecir la respuesta en los datos de prueba. Predecir que una persona realizará una compra si la probabilidad estimada de compra es superior al 20%. Forme una matriz de confusión. ¿Qué fracción de la gente predijo que haría una compra? ¿De hecho haces uno? ¿Cómo se compara esto con los resultados obtenidos al aplicar KNN o regresión logística a este conjunto de datos?
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+Boost_Prob = predict(Boost_Caravan, Caravan_Test, n.trees = 1000, type = "response")
+Boost_Pred = ifelse(Boost_Prob > 0.2, 1, 0)
+Matrix_Conf = table(Caravan_Test$Purchase, Boost_Pred)
+Verdadero_Compr = round(Matrix_Conf[2,2]/sum(Matrix_Conf[,2]),2)
+
+paste("La fraccion de personas que el modelo predijo como compradores y que efectuaron una compra es de:", Verdadero_Compr)
+
+#Usando Regresión Logistica.
+LM_Caravan = glm(Purchase ~ ., data = Caravan_Train, family = binomial)
+LM_Prob = predict(LM_Caravan, Caravan_Test, type = "response")
+LM_Pred = ifelse(LM_Prob > 0.2, 1, 0)
+
+Matrix_Conf = table(Valor_real = Caravan_Test$Purchase, Prediccion = LM_Pred)
+Verdadero_Compr = round(Matrix_Conf[2,2]/sum(Matrix_Conf[,2]),2)
+Matrix_Conf
+Verdadero_Compr
+paste("La fraccion usando Regresión Logistica es:", Verdadero_Compr)
+
+#Usando KNN.
+Numeros_K = 1:10
+V_Fracc = rep(NA,length(Numeros_K))
+
+for(i in 1:length(Numeros_K)){
+  KNN_Predicc = knn(Caravan_Train[,1:85], Caravan_Test[,1:85], Caravan_Train$Purchase, k = i, prob = TRUE )
+  Matrix_Conf = table(Caravan_Test$Purchase, KNN_Predicc)
+  Verdadero_Compr = round(Matrix_Conf[2,2]/sum(Matrix_Conf[,2]),4)
+  V_Fracc[i] = Verdadero_Compr
+  KNN_Predicc = NULL
+}
+paste("K =", Numeros_K, "fr =", V_Fracc)
+
+```
+
